@@ -130,19 +130,12 @@ const fonts = `
   }
   :root[data-theme="dark"] { --wall: #121212; --ink: #ededea; --muted: #a7a7a5; color-scheme: dark; }
 
-  /* Painted rooms. A dark wall is a fact and stays dark at night; a light wall turns into its own night version,
-     the same hue at about 27% lightness. Paintings are never dimmed. */
+  /* Painted rooms. The wall colour is a curatorial decision and does not follow the visitor's system setting:
+     a room looks the same to everyone, by day or by night, on screen, in the wallpapers and in the share images.
+     Only the public spaces (entrance, list of works, about) switch between gallery white and near-black. */
   :root[data-room] { --wall: var(--room-wall); --muted: color-mix(in srgb, var(--ink) 75%, var(--wall)); }
   :root[data-ink="light"] { --ink: #f2f1ed; color-scheme: dark; }
   :root[data-ink="dark"] { --ink: #141414; color-scheme: light; }
-  @media (prefers-color-scheme: dark) {
-    :root[data-ink="dark"]:not([data-theme="light"]) { --wall: color-mix(in srgb, var(--room-wall) 14%, #121212); --ink: #f2f1ed; color-scheme: dark; }
-    @supports (color: oklch(from red l c h)) {
-      :root[data-ink="dark"]:not([data-theme="light"]) { --wall: oklch(from var(--room-wall) 0.27 c h); }
-    }
-  }
-  :root[data-ink="dark"][data-theme="dark"] { --wall: color-mix(in srgb, var(--room-wall) 14%, #121212); --ink: #f2f1ed; color-scheme: dark; }
-  @supports (color: oklch(from red l c h)) { :root[data-ink="dark"][data-theme="dark"] { --wall: oklch(from var(--room-wall) 0.27 c h); } }
 
   /* Walking between pages crossfades, and a painting glides from its place in the hang to the stage. */
   @media (prefers-reduced-motion: no-preference) {
