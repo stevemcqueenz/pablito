@@ -1,7 +1,7 @@
 name: Pages
 on:
   push:
-    branches: [main, claude/gifted-noether-pjvl3l]
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
