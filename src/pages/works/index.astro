@@ -1,0 +1,59 @@
+---
+import Museum from '../../layouts/Museum.astro';
+import { artists, getPieces, roomHref, url } from '../../lib/collection.js';
+---
+<Museum title="List of works" description="Every work in the collection, room by room, with catalogue numbers, media and dimensions." rel={{ up: url('/') }}>
+  <article class="works page cols">
+    <h1 class="statement">List of works</h1>
+    <table class="label">
+      <caption class="sr-only">Every work in the collection, grouped by room</caption>
+      <colgroup><col class="c-no" /><col class="c-t" /><col class="c-med" /><col class="c-dim" /><col /></colgroup>
+      <thead class="sr-only">
+        <tr><th scope="col">No.</th><th scope="col">Title</th><th scope="col">Medium</th><th scope="col">Dimensions</th><th scope="col">Note</th></tr>
+      </thead>
+      {artists.map((a, i) => (
+        <tbody>
+          <tr class="room-row">
+            <th colspan="5" scope="rowgroup"><a href={roomHref(a)}><span class="rn">{i + 1}</span>{a.wing}, in the manner of {a.name}</a></th>
+          </tr>
+          {getPieces(a).map((p) => (
+            <tr class="work-row">
+              <td class="no"><a href={p.href} tabindex="-1" aria-hidden="true">{p.catNo}</a></td>
+              <td class="t"><a href={p.href}><cite>{p.title}</cite></a></td>
+              <td class="med muted">{a.medium}</td>
+              <td class="dim muted">{p.size ? `${p.size[0]} × ${p.size[1]} cm` : ''}</td>
+              <td class="mv muted">{p.motion ? 'Moving' : p.image ? '' : 'Not yet painted'}</td>
+            </tr>
+          ))}
+        </tbody>
+      ))}
+    </table>
+  </article>
+</Museum>
+<style>
+  .works { padding-top: 48px; row-gap: 48px; }
+  @media (min-width: 900px) { .works { padding-top: 64px; } .works > * { grid-column: 2 / 12; } }
+  table { border-collapse: collapse; width: 100%; }
+  tbody + tbody .room-row th { padding-top: 40px; }
+  .room-row th { text-align: left; font-weight: 600; padding-bottom: 8px; }
+  .room-row a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+  .rn { display: inline-block; min-width: calc(3.5em + 16px); }
+  td { padding: 3px 16px 3px 0; vertical-align: baseline; }
+  .no { width: calc(3.5em + 16px); }
+  @media (min-width: 700px) { table { table-layout: fixed; } .c-no { width: calc(3.5em + 16px); } .c-t { width: 44%; } .c-med { width: 26%; } .c-dim { width: 16%; } }
+  .t cite { font-size: 17px; line-height: 24px; }
+  .t a:hover cite, .work-row:has(.no a:hover) cite { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  .dim { white-space: nowrap; }
+  /* On a phone each row wraps into two lines: number and title, then medium and dimensions. */
+  @media (max-width: 699px) {
+    .work-row { display: grid; grid-template-columns: 3.4em auto 1fr; padding: 5px 0; }
+    .rn { min-width: 3.4em; }
+    .work-row td { padding: 0; }
+    .work-row .t { grid-column: 2 / 4; }
+    .work-row .med { grid-column: 2; padding-right: 0.25em; }
+    .work-row .med::after { content: ','; }
+    .work-row .dim { grid-column: 3; }
+    .work-row .mv { grid-column: 2 / 4; }
+    .work-row .mv:empty { display: none; }
+  }
+</style>

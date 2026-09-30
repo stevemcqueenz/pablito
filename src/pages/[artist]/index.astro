@@ -1,0 +1,116 @@
+---
+import Museum from '../../layouts/Museum.astro';
+import Work from '../../components/Work.astro';
+import Tombstone from '../../components/Tombstone.astro';
+import { artists, getPieces, getLead, roomInfo, roomHref, roomNeighbours, lifeDates, url } from '../../lib/collection.js';
+export function getStaticPaths() {
+  return artists.map((a) => ({ params: { artist: a.id }, props: { artist: a } }));
+}
+const { artist } = Astro.props;
+const pieces = getPieces(artist);
+const room = roomInfo(artist);
+const n = room.number;
+const { prev, next } = roomNeighbours(artist);
+const nextLead = next ? getLead(next) : null;
+// A shared room arrives as its lead painting on its wall.
+const lead = getLead(artist);
+const share = { title: `${artist.wing} — Room ${n}, ${artist.name}`, ...(lead.image && { image: url(`/og/${artist.id}/${lead.id}.jpg`), alt: `${lead.alt}, on the wall of room ${n}` }) };
+---
+<Museum kind="room" title={artist.wing} description={artist.wallText} room={room} share={share} rel={{ prev: prev ? roomHref(prev) : url('/'), next: next ? roomHref(next) : url('/'), up: url('/') }}>
+  <section class="panel page cols">
+    <p class="numeral muted num" aria-hidden="true">{n}</p>
+    <div class="head">
+      <h1 class="display"><span class="sr-only">Room {n}: </span>{artist.wing}</h1>
+      <p class="label who">In the manner of {artist.name} · {artist.nationality}, {lifeDates(artist)} · {artist.movement}</p>
+    </div>
+    <p class="walltext">{artist.wallText}</p>
+  </section>
+
+  <section class="walk page" aria-label="The works">
+    {pieces.map((p) => (
+      <article class="wall cols" id={p.id}>
+        <a class="piece-link hung" href={p.href} tabindex="-1" aria-hidden="true"><Work piece={p} sizes="(min-width: 1024px) 70vw, 100vw" /></a>
+        <div class="ts"><Tombstone piece={p} link headingLevel={2} /></div>
+      </article>
+    ))}
+  </section>
+
+  <section class="rule page cols" aria-label="The brief for this room">
+    <div>
+      <p class="small muted">The brief for this room</p>
+      <p class="title">{artist.subjectRule}</p>
+    </div>
+  </section>
+
+  <nav class="room-end page cols" aria-label="Rooms either side">
+    <div class="onward">
+      {next ? (
+        <>
+          <p class="small muted">Next room</p>
+          <a class="door" href={roomHref(next)} rel="next">
+            <span class="swatch" style={`--room-wall:${next.wall}`} data-ink={next.ink}>
+              {nextLead && <Work piece={nextLead} still transition={false} sizes="200px" />}
+            </span>
+            <span class="door-text">
+              <span class="numeral-s">{n + 1}</span>
+              <span class="plate door-title">{next.wing}</span>
+              <span class="label">In the manner of {next.name}</span>
+            </span>
+          </a>
+        </>
+      ) : (
+        <>
+          <p class="small muted">This is the last room</p>
+          <a class="door" href={url('/')}><span class="door-text"><span class="plate door-title">Back to the entrance</span></span></a>
+        </>
+      )}
+      {prev && <p class="small prevroom"><a class="u" href={roomHref(prev)} rel="prev">Previous room: {n - 1}, {prev.wing}</a></p>}
+    </div>
+  </nav>
+</Museum>
+
+<style>
+  .panel { padding-top: 24px; }
+  .num { margin-bottom: 4px; }
+  .who { margin-top: 16px; }
+  .walltext { margin-top: 32px; }
+  @media (min-width: 900px) {
+    .panel { padding-top: 64px; align-items: first baseline; }
+    .num { grid-column: 1 / 3; grid-row: 1; margin: 0; }
+    .head { grid-column: 3 / 10; grid-row: 1; }
+    .walltext { grid-column: 3 / 9; }
+  }
+
+  /* The walk: one work per wall, the same position every time, the label beside it at the bottom edge.
+     The gap between walls is wide enough that each painting holds the view on its own. */
+  .walk { margin-top: 48px; display: grid; gap: 72px; }
+  .wall { row-gap: 16px; scroll-margin-top: 24px; }
+  .hung { display: block; }
+  .hung :global(.work) { width: min(100%, calc(60svh * var(--r))); margin-inline: auto; }
+  .wall:has(.hung:hover) :global(cite) { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  .ts :global(.tombstone a:hover cite) { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  @media (min-width: 900px) {
+    .walk { margin-top: 64px; gap: 16svh; }
+    .hung { grid-column: 1 / 10; }
+    .hung :global(.work) { width: min(100%, calc(min(58svh, 640px) * var(--r))); }
+    .ts { grid-column: 10 / 13; align-self: end; }
+  }
+
+  /* After the last wall, the brief the room was made to, then the door to the next room. */
+  .rule { margin-top: 12svh; }
+  .rule > div { max-width: 34em; }
+  .rule .title { margin-top: 4px; }
+  @media (min-width: 900px) { .rule > div { grid-column: 3 / 9; } }
+  .room-end { margin-top: 64px; }
+  @media (min-width: 900px) { .onward { grid-column: 3 / 13; } }
+  .door { display: flex; align-items: flex-end; gap: 24px; margin-top: 12px; flex-wrap: wrap; }
+  .swatch { display: block; padding: 20px; background: var(--room-wall); }
+  .swatch :global(.work) { height: 160px; width: auto; aspect-ratio: var(--r); }
+  .swatch :global(.work img) { height: 100%; width: auto; }
+  .door-text { display: grid; gap: 4px; }
+  .numeral-s { font-stretch: 75%; font-weight: 500; font-size: 28px; line-height: 34px; }
+  .door-title { font-style: normal; }
+  .door:hover .door-title, .door:focus-visible .door-title { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  .prevroom { margin-top: 24px; }
+  @media (max-width: 599px) { .swatch { padding: 12px; } .swatch :global(.work) { height: 120px; } }
+</style>

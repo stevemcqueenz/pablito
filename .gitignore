@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+.env
+.env.*
+# Generated before every build by scripts/wallpapers.mjs
+public/wallpapers/
+# Generated before every build by scripts/og.mjs
+public/og/

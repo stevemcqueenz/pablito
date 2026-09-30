@@ -1,0 +1,54 @@
+<script>
+  // The dwell rule. A moving piece shows its sharp still first. Once it has been at least 60% in view for 1.5 seconds
+  // the clip loads and fades in over the still. Below 30% it pauses and keeps its frame. One clip plays at a time.
+  // With reduced motion or save-data on, nothing starts by itself.
+  const quiet = matchMedia('(prefers-reduced-motion: reduce)').matches || (navigator as any).connection?.saveData === true;
+  const videos = [...document.querySelectorAll<HTMLVideoElement>('video.motion[data-src]')];
+  let current: HTMLVideoElement | null = null;
+  const timers = new Map<HTMLVideoElement, number>();
+  const controls = (v: HTMLVideoElement) => document.querySelectorAll<HTMLButtonElement>(`[data-motion-toggle][aria-controls="${v.id}"]`);
+
+  const label = (v: HTMLVideoElement) => {
+    const text = !v.paused ? 'Pause' : v.dataset.started || !quiet ? 'Play' : 'Play the moving version';
+    controls(v).forEach((b) => { b.textContent = text; b.setAttribute('aria-pressed', String(!v.paused)); });
+  };
+  const play = (v: HTMLVideoElement) => {
+    if (current && current !== v) current.pause();
+    current = v;
+    if (!v.getAttribute('src')) { v.src = v.dataset.src!; v.load(); }
+    v.dataset.started = '1';
+    v.play().catch(() => {});
+  };
+
+  for (const v of videos) {
+    v.addEventListener('playing', () => { v.classList.add('on'); label(v); });
+    v.addEventListener('pause', () => label(v));
+    controls(v).forEach((b) => b.addEventListener('click', () => {
+      if (v.paused) { delete v.dataset.held; play(v); } else { v.dataset.held = '1'; v.pause(); }
+    }));
+    label(v);
+  }
+
+  if (!quiet && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        const v = e.target.querySelector('video.motion') as HTMLVideoElement;
+        if (!v) continue;
+        if (e.intersectionRatio >= 0.6) {
+          if (!timers.has(v) && v.paused && !v.dataset.held) {
+            timers.set(v, window.setTimeout(() => { timers.delete(v); if (!v.dataset.held) play(v); }, 1500));
+          }
+        } else {
+          clearTimeout(timers.get(v)); timers.delete(v);
+          if (e.intersectionRatio < 0.3 && !v.paused) v.pause();
+        }
+      }
+    }, { threshold: [0, 0.3, 0.6] });
+    videos.forEach((v) => io.observe(v.parentElement!));
+  }
+</script>
+<style is:global>
+  .work video.motion { opacity: 0; transition: opacity 800ms ease-out; }
+  .work video.motion.on { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .work video.motion { transition: none; } }
+</style>

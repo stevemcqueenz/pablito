@@ -1,0 +1,86 @@
+---
+import Museum from '../layouts/Museum.astro';
+import { museum, artists, roomHref, url } from '../lib/collection.js';
+---
+<Museum title="How this museum works" description="How the collection is made, the house rules, the rooms, and the colophon." rel={{ up: url('/') }}>
+  <article class="about page cols">
+    <h1 class="statement">How this museum works</h1>
+
+    <section>
+      <h2 class="label h">How the collection is made</h2>
+      <div class="text prose">
+        <p>{museum.premise}</p>
+        <p>Each work begins as a brief: a motif the painter could never have seen, and a description of how they painted, written without their name. The brief goes to an image-generation model. The house renders with FLUX by default and keeps GPT Image, Nano Banana and Seedream on call. A curator looks at what comes back and refuses most of it. What hangs is what was not refused. Four works were afterwards set in motion by a video model.</p>
+        <p>The brief behind every work stays on its page, under the painting and its label, word for word.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="label h">House rules</h2>
+      <ol class="rules">
+        {museum.promptRules.map((r, i) => <li><span class="rn">{i + 1}</span><span>{r}</span></li>)}
+      </ol>
+    </section>
+
+    <section>
+      <h2 class="label h">What “in the manner of” means</h2>
+      <p class="text">In a catalogue, a work “after” a painter is a copy of a painting that exists. A work “in the manner of” a painter is a later work made in their way of seeing, and every work in this museum is the second kind.</p>
+    </section>
+
+    <section>
+      <h2 class="label h">The rooms</h2>
+      <p class="text">The rooms are numbered in the order the painters were born. The arrow keys walk from one painting to the next and on into the next room; Escape steps back.</p>
+      <ol class="roomlist label">
+        {artists.map((a, i) => <li><span class="rn">{i + 1}</span><a href={roomHref(a)}>{a.wing}</a><span class="muted">{a.name}</span></li>)}
+      </ol>
+    </section>
+
+    <section>
+      <h2 class="label h">Colophon</h2>
+      <div class="text prose">
+        <p>Set in Newsreader, by Production Type, for everything the curator says, and Archivo, by Omnibus-Type, for everything the museum records. Both are served from this site. Built with Astro as a static site; the only scripts walk you between rooms and start a moving painting once you have stood in front of it.</p>
+        <p>Each room is painted a colour chosen for its paintings, never taken from them:</p>
+      </div>
+      <table class="walls label">
+        <caption class="sr-only">Wall colours by room</caption>
+        <tbody>
+          {artists.map((a, i) => (
+            <tr>
+              <td class="rn">{i + 1}</td>
+              <td><span class="chip" style={`background:${a.wall}`}></span></td>
+              <td>{a.wing}</td>
+              <td class="muted hex">{a.wall}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p class="text last">No painting by any named artist is reproduced here, and no painter's name was used to make one.</p>
+    </section>
+  </article>
+</Museum>
+
+<style>
+  .about { padding-top: 48px; row-gap: 64px; }
+  @media (min-width: 900px) { .about > * { grid-column: 3 / 9; } .about { padding-top: 64px; } }
+  .h { font-weight: 600; margin-bottom: 12px; }
+  .text + .text, .prose p + p { margin-top: 1em; }
+  .rules { display: grid; gap: 16px; font-family: var(--serif); font-size: 19px; line-height: 29px; }
+  .rules li, .roomlist li { display: grid; grid-template-columns: 2.5em 1fr; }
+  .rules .rn { font-family: var(--sans); font-weight: 500; font-stretch: 75%; }
+  .roomlist { margin-top: 16px; }
+  .roomlist li { grid-template-columns: 2.5em minmax(0, 1fr) minmax(0, 1fr); gap: 0 16px; padding-block: 2px; }
+  .roomlist a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+  @media (max-width: 599px) { .roomlist li { grid-template-columns: 2.5em 1fr; } .roomlist .muted { grid-column: 2; } }
+  @media (min-width: 900px) {
+    .rules { font-size: 21px; line-height: 32px; }
+    /* The numerals hang in the margin, in the two columns to the left. */
+    .rules li { display: block; position: relative; }
+    .rules .rn { position: absolute; right: calc(100% + 24px); }
+  }
+  .walls { border-collapse: collapse; margin-top: 16px; }
+  .walls td { padding: 3px 16px 3px 0; vertical-align: middle; }
+  .walls .rn { width: 2.5em; }
+  .chip { display: block; width: 32px; height: 20px; outline: 1px solid color-mix(in srgb, var(--ink) 20%, transparent); outline-offset: -1px; }
+  .hex { font-variant-numeric: tabular-nums; }
+  .last { margin-top: 24px; }
+</style>

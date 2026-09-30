@@ -1,0 +1,60 @@
+---
+import { lifeDates } from '../lib/collection.js';
+/**
+ * The tombstone label. Same order on every page: artist, nationality and dates; title, date; medium; dimensions;
+ * credit line; accession number; and, for a moving piece, the loop and its control.
+ */
+const { piece, stage = false, link = false, walk = null, headingLevel = null } = Astro.props;
+const a = piece.artist;
+const Title = headingLevel ? `h${headingLevel}` : 'p';
+// The scale diagram: the work's outline beside a 175 cm figure, 64px tall, so a 50 cm Vermeer and a 250 cm Rothko read at a glance.
+const H = 64;
+const dims = piece.size ? { h: piece.size[0], w: piece.size[1] } : null;
+const k = dims ? H / Math.max(175, dims.h) : 0;
+const rect = dims ? { w: Math.max(2, dims.w * k), h: Math.max(2, dims.h * k) } : null;
+const svgW = rect ? Math.ceil(rect.w + 16) : 0;
+---
+<div class:list={['tombstone', { stage }]}>
+  <p class="who">In the manner of {a.name}</p>
+  <p class="muted">{a.nationality}, {lifeDates(a)}</p>
+  <Title class="what">{link ? <a href={piece.href}><cite>{piece.title}</cite></a> : <cite>{piece.title}</cite>}, 2026</Title>
+  <p>{a.medium}</p>
+  {piece.size && <p>{piece.size[0]} × {piece.size[1]} cm</p>}
+  {stage && rect && (
+    <svg class="scale" width={svgW} height={H} viewBox={`0 0 ${svgW} ${H}`} role="img" aria-label={`Shown to scale beside a person 175 cm tall`}>
+      <line x1="1.5" y1={H - 175 * k} x2="1.5" y2={H} />
+      <circle cx="1.5" cy={H - 175 * k + 3} r="2.5" />
+      <rect x={10.5} y={H - rect.h + 0.5} width={rect.w - 1} height={rect.h - 1} />
+    </svg>
+  )}
+  {piece.image
+    ? <p class="small muted credit">Never painted.<br />Commissioned for the collection, 2026.</p>
+    : <p class="small muted credit">Commissioned. Not yet painted.</p>}
+  <p class="small muted">{piece.accession}</p>
+  {piece.motion && piece.image && (
+    <p class="small ctl">Moving, {piece.loopSeconds ? `${piece.loopSeconds}-second loop` : 'loop'} · <button type="button" class="textbutton" data-motion-toggle aria-controls={`m-${piece.artistId}-${piece.id}`}>Play</button></p>
+  )}
+  {walk && (
+    <p class="small walk">
+      {walk.prev && <a href={walk.prev.href} rel="prev" aria-keyshortcuts="ArrowLeft">← {walk.prev.label}</a>}
+      {walk.prev && walk.next && <span aria-hidden="true"> · </span>}
+      {walk.next && <a href={walk.next.href} rel="next" aria-keyshortcuts="ArrowRight">{walk.next.label} →</a>}
+    </p>
+  )}
+  {walk && <p class="small muted hint" aria-hidden="true">← → to walk, Esc for the room</p>}
+</div>
+<style>
+  .stage .what { font-size: 19px; line-height: 26px; }
+  .scale { display: block; margin: 10px 0 4px; overflow: visible; }
+  .scale line, .scale rect, .scale circle { stroke: var(--muted); fill: none; stroke-width: 1; }
+  .scale circle { fill: var(--muted); stroke: none; }
+  .walk { margin-top: 16px; }
+  .walk a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  .hint { display: none; margin-top: 4px; }
+  @media (hover: hover) and (pointer: fine) { .hint { display: block; } }
+  @media (max-width: 899px) {
+    .walk { display: flex; justify-content: space-between; gap: 16px; }
+    .walk a { min-height: 44px; display: inline-flex; align-items: center; }
+    .walk span { display: none; }
+  }
+</style>

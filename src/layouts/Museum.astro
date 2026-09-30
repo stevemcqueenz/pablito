@@ -1,0 +1,246 @@
+---
+import { museum, artists, roomHref, url } from '../lib/collection.js';
+import serifRoman from '@fontsource-variable/newsreader/files/newsreader-latin-opsz-normal.woff2?url';
+import serifItalic from '@fontsource-variable/newsreader/files/newsreader-latin-opsz-italic.woff2?url';
+import sans from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url';
+
+/**
+ * title: the page's own name; the layout appends the room and the museum.
+ * room:  { number, title, href, wall, ink } on room and piece pages; the page is painted the room's wall colour.
+ * rel:   { prev, next, up } hrefs for the keyboard walk.
+ * share: { title, image, alt } for link previews; image is a 1200 × 630 file under /og/ (see scripts/og.mjs).
+ *        Public pages share the entrance painting on gallery white.
+ */
+const { title, description = museum.tagline, room = null, rel = {}, kind = 'public', share = {} } = Astro.props;
+// Where you are, in one line: the room's place in the building and the door to the next one.
+const onward = room ? artists[room.number] ?? null : null;
+const docTitle = [title, room && `Room ${room.number}`, museum.name].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(' — ');
+
+const site = Astro.site ?? new URL(Astro.url.origin);
+const shareTitle = share.title ?? (title ? docTitle : `${museum.name} — ${museum.tagline}`);
+const shareImage = new URL(share.image ?? url('/og/pablito.jpg'), site).href;
+const shareAlt = share.alt ?? 'Night Shift, in the manner of Edward Hopper, on a white wall';
+const shareUrl = new URL(Astro.url.pathname, site).href;
+
+const fonts = `
+@font-face { font-family: 'Newsreader'; font-style: normal; font-display: swap; font-weight: 200 800; src: url(${serifRoman}) format('woff2-variations'), url(${serifRoman}) format('woff2'); }
+@font-face { font-family: 'Newsreader'; font-style: italic; font-display: swap; font-weight: 200 800; src: url(${serifItalic}) format('woff2-variations'), url(${serifItalic}) format('woff2'); }
+@font-face { font-family: 'Archivo'; font-style: normal; font-display: swap; font-weight: 100 900; font-stretch: 62% 125%; src: url(${sans}) format('woff2-variations'), url(${sans}) format('woff2'); }
+`;
+---
+<!doctype html>
+<html lang="en" data-room={room ? room.number : undefined} data-ink={room ? room.ink : undefined} style={room ? `--room-wall:${room.wall}` : undefined}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{docTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={museum.name} />
+    <meta property="og:title" content={shareTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={shareUrl} />
+    <meta property="og:image" content={shareImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={shareAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {rel.prev && <link rel="prev" href={rel.prev} />}
+    {rel.next && <link rel="next" href={rel.next} />}
+    {rel.up && <link rel="up" href={rel.up} />}
+    {rel.next && <link rel="prefetch" href={rel.next} />}
+    <link rel="icon" type="image/png" sizes="32x32" href={url('/favicon-32.png')} />
+    <link rel="icon" type="image/png" sizes="192x192" href={url('/favicon-192.png')} />
+    <link rel="apple-touch-icon" href={url('/apple-touch-icon.png')} />
+    <link rel="preload" href={sans} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={serifRoman} as="font" type="font/woff2" crossorigin />
+    <style is:inline set:html={fonts}></style>
+    <slot name="head" />
+  </head>
+  <body data-kind={kind}>
+    <header class="site">
+      <a class="wordmark" href={url('/')}>{museum.name}</a>
+      {room && kind !== 'room' && <a class="site-here" href={room.href}>Room {room.number} · {room.title}</a>}
+      <nav aria-label="Museum">
+        <a href={url('/#rooms')}>Rooms</a>
+        <a href={url('/works/')}><span class="long">List of works</span><span class="short">Works</span></a>
+        <a href={url('/about/')}>About</a>
+      </nav>
+    </header>
+    {room && kind !== 'room' && <a class="mobile-here" href={room.href}>Room {room.number} · {room.title}</a>}
+    <main>
+      <slot />
+    </main>
+    <footer class="site">
+      {room && (
+        <p class="small here-line">
+          <span>Room {room.number} of {artists.length}</span>
+          <span aria-hidden="true"> · </span>
+          {onward
+            ? <a class="u" href={roomHref(onward)}>Next, room {room.number + 1}: {onward.wing}</a>
+            : <a class="u" href={url('/')}>Back to the entrance</a>}
+        </p>
+      )}
+      <p class="small muted statement-line">Nothing here was painted and nothing here is copied. Every work is a new commission in the manner of its painter.</p>
+    </footer>
+
+    <script is:inline>
+      // The walk. Every page names its neighbours in <link rel="prev|next|up">; the arrow keys follow them.
+      (() => {
+        const href = (r) => document.querySelector(`link[rel="${r}"]`)?.getAttribute('href');
+        const skip = (el) => el && el.closest && el.closest('input, textarea, select, button, summary, [contenteditable]:not([contenteditable="false"])');
+        addEventListener('keydown', (e) => {
+          if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+          if (skip(e.target)) return;
+          let to = null;
+          if (e.key === 'ArrowRight') to = href('next');
+          else if (e.key === 'ArrowLeft') to = href('prev');
+          else if (e.key === 'Escape') to = href('up');
+          // Up leaves for the room only from the top of the page, so it never steals scrolling.
+          else if (e.key === 'ArrowUp' && document.body.dataset.kind === 'piece' && scrollY < 8) to = href('up');
+          else if (e.key === ' ' && document.body.dataset.kind === 'piece') {
+            const control = document.querySelector('[data-motion-toggle]');
+            if (control) { e.preventDefault(); control.click(); }
+            return;
+          }
+          if (to) { e.preventDefault(); location.href = to; }
+        });
+      })();
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --wall: #ffffff;
+    --ink: #141414;
+    --muted: #5b5b5b;
+    --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+    --sans: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    --m: 16px;
+    --g: 16px;
+    --header: 56px;
+    color-scheme: light;
+  }
+  @media (min-width: 600px) { :root { --m: 24px; --g: 24px; } }
+  @media (min-width: 1024px) { :root { --m: 40px; } }
+  @media (min-width: 900px) { :root { --header: 64px; } }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --wall: #121212; --ink: #ededea; --muted: #a7a7a5; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --wall: #121212; --ink: #ededea; --muted: #a7a7a5; color-scheme: dark; }
+
+  /* Painted rooms. A dark wall is a fact and stays dark at night; a light wall turns into its own night version,
+     the same hue at about 27% lightness. Paintings are never dimmed. */
+  :root[data-room] { --wall: var(--room-wall); --muted: color-mix(in srgb, var(--ink) 75%, var(--wall)); }
+  :root[data-ink="light"] { --ink: #f2f1ed; color-scheme: dark; }
+  :root[data-ink="dark"] { --ink: #141414; color-scheme: light; }
+  @media (prefers-color-scheme: dark) {
+    :root[data-ink="dark"]:not([data-theme="light"]) { --wall: color-mix(in srgb, var(--room-wall) 14%, #121212); --ink: #f2f1ed; color-scheme: dark; }
+    @supports (color: oklch(from red l c h)) {
+      :root[data-ink="dark"]:not([data-theme="light"]) { --wall: oklch(from var(--room-wall) 0.27 c h); }
+    }
+  }
+  :root[data-ink="dark"][data-theme="dark"] { --wall: color-mix(in srgb, var(--room-wall) 14%, #121212); --ink: #f2f1ed; color-scheme: dark; }
+  @supports (color: oklch(from red l c h)) { :root[data-ink="dark"][data-theme="dark"] { --wall: oklch(from var(--room-wall) 0.27 c h); } }
+
+  /* Walking between pages crossfades, and a painting glides from its place in the hang to the stage. */
+  @media (prefers-reduced-motion: no-preference) {
+    @view-transition { navigation: auto; }
+    ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation-duration: 200ms; }
+    ::view-transition-group(root) { animation-duration: 240ms; }
+  }
+
+  * { box-sizing: border-box; }
+  html { background: var(--wall); -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100svh; display: flex; flex-direction: column;
+    background: var(--wall); color: var(--ink);
+    font-family: var(--sans); font-size: 17px; line-height: 1.45;
+    font-variant-numeric: lining-nums tabular-nums; font-kerning: normal;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  main { flex: 1; }
+  p, h1, h2, h3, ol, ul, dl, dd, figure, blockquote { margin: 0; }
+  ol, ul { padding: 0; list-style: none; }
+  img, video { display: block; }
+  a { color: inherit; text-decoration: none; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+  i, cite, em { font-style: italic; }
+  cite { font-family: var(--serif); }
+
+  /* Links inside running text are always underlined. */
+  .prose a, a.u { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  .prose a:hover, a.u:hover { text-decoration-thickness: 2px; }
+
+  /* Type, by meaning. Newsreader is what the curator says; Archivo is what the institution records. */
+  .display { font-family: var(--serif); font-weight: 380; font-variation-settings: 'opsz' 72; font-size: 40px; line-height: 44px; letter-spacing: -0.01em; }
+  .numeral { font-family: var(--sans); font-weight: 500; font-stretch: 75%; font-size: 40px; line-height: 44px; }
+  .statement { font-family: var(--serif); font-weight: 400; font-variation-settings: 'opsz' 60; font-size: 32px; line-height: 36px; letter-spacing: -0.005em; }
+  .plate { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 24px; line-height: 30px; }
+  .walltext { font-family: var(--serif); font-weight: 400; font-variation-settings: 'opsz' 20; font-size: 19px; line-height: 29px; max-width: 34em; }
+  .text { font-family: var(--serif); font-weight: 400; font-size: 18px; line-height: 28px; max-width: 34em; }
+  .title { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 17px; line-height: 24px; }
+  .label { font-family: var(--sans); font-size: 15px; line-height: 21px; }
+  .small { font-family: var(--sans); font-size: 13px; line-height: 18px; }
+  .muted { color: var(--muted); }
+  @media (min-width: 900px) {
+    .display { font-size: 64px; line-height: 64px; }
+    .numeral { font-size: 64px; line-height: 64px; }
+    .statement { font-size: 44px; line-height: 48px; }
+    .plate { font-size: 28px; line-height: 34px; }
+    .walltext { font-size: 21px; line-height: 32px; }
+    .text { font-size: 19px; line-height: 29px; }
+  }
+
+  /* The twelve-column grid. Walls have no max width; text is capped by columns. */
+  .page { padding-inline: var(--m); }
+  .cols { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--g); }
+  .cols > * { grid-column: 1 / -1; }
+
+  header.site {
+    height: var(--header); padding-inline: var(--m);
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    font-size: 15px; line-height: 21px;
+  }
+  .wordmark { font-family: var(--serif); font-style: italic; font-size: 22px; line-height: 1; }
+  /* The museum's own signage recedes: only the name is in full ink; the way around is in the label grey until touched. */
+  header.site nav { display: flex; gap: 20px; }
+  header.site nav a, .site-here, .mobile-here { color: var(--muted); }
+  header.site nav a:hover, .site-here:hover, .mobile-here:hover { color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  .site-here { display: none; }
+  @media (min-width: 900px) {
+    header.site { display: grid; grid-template-columns: 1fr auto 1fr; }
+    header.site nav { grid-column: 3; justify-self: end; gap: 24px; }
+    .site-here { grid-column: 2; }
+    .site-here { display: block; }
+  }
+  .mobile-here { display: block; padding: 0 var(--m) 8px; font-size: 15px; line-height: 21px; }
+  @media (min-width: 900px) { .mobile-here { display: none; } }
+
+  footer.site { margin: 96px var(--m) 0; padding: 24px 0 40px; border-top: 1px solid color-mix(in srgb, var(--ink) 18%, var(--wall)); display: grid; gap: 8px; }
+  header.site .short { display: none; }
+  @media (max-width: 599px) { header.site .long { display: none; } header.site .short { display: inline; } header.site nav { gap: 16px; } }
+  .work.empty { outline: 1px dashed var(--muted); outline-offset: -1px; }
+
+  /* A painting is shown whole: its own ratio, no box, no shadow, no crop. */
+  .work { position: relative; display: block; }
+  .work img, .work video { width: 100%; height: auto; }
+  .work video { position: absolute; inset: 0; height: 100%; }
+  a.piece-link:focus-visible { outline: none; }
+  a.piece-link:focus-visible .work { outline: 2px solid var(--ink); outline-offset: 6px; }
+  a.piece-link:hover cite, a.piece-link:focus-visible cite,
+  a.piece-link:hover .cap-title, a.piece-link:focus-visible .cap-title { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+
+  /* The tombstone: one label, everywhere. */
+  .tombstone { font-family: var(--sans); font-size: 15px; line-height: 21px; max-width: 280px; }
+  .tombstone .who { font-weight: 600; }
+  .tombstone .what { font-family: var(--serif); font-weight: 400; font-size: 17px; line-height: 24px; margin-top: 6px; }
+  .tombstone .credit { margin-top: 10px; }
+  .tombstone .ctl { margin-top: 10px; }
+  .tombstone button.textbutton {
+    font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer;
+    text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em;
+  }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>

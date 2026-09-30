@@ -1,0 +1,106 @@
+---
+import Museum from '../layouts/Museum.astro';
+import Work from '../components/Work.astro';
+import Tombstone from '../components/Tombstone.astro';
+import { museum, artists, works, getArtist, getPieces, getLead, roomHref, inWords, capitalise } from '../lib/collection.js';
+
+// The entrance opens on one painting that moves.
+const opening = getPieces(getArtist('hopper')).find((p) => p.id === 'laundromat');
+const moving = works.filter((w) => w.motion && w.image).length;
+const hung = works.filter((w) => w.image).length;
+const count = `${capitalise(inWords(artists.length))} rooms, ${inWords(hung)} paintings.${moving ? ` ${capitalise(inWords(moving))} of them move.` : ''}`;
+const first = artists[0];
+const last = artists[artists.length - 1];
+const surname = (a) => a.name.split(' ').filter((w) => !/^(the|elder|van|af|de)$/i.test(w)).slice(-1)[0];
+const born = (a) => a.years.replace(/^b\.\s*/, '').split('–')[0].trim();
+---
+<Museum description={museum.premise} rel={{ next: roomHref(first) }}>
+  <section class="arrival" aria-label="At the entrance">
+    <figure>
+      <a class="piece-link" href={opening.href} style={`--r:${opening.ratio}`}><Work piece={opening} eager sizes="(min-width: 900px) 70vw, 100vw" /></a>
+      <figcaption><Tombstone piece={opening} link /></figcaption>
+    </figure>
+  </section>
+
+  <section class="entrance page cols">
+    <h1 class="statement">{museum.tagline}</h1>
+    <div class="premise">
+      <p class="text">{museum.premise}</p>
+      <p class="label">{count}</p>
+    </div>
+  </section>
+
+  <section id="rooms" class="rooms page" aria-labelledby="rooms-intro">
+    <p id="rooms-intro" class="label muted">The rooms, in the order the painters were born: {surname(first)}, {born(first)}, to {surname(last)}, {born(last)}.</p>
+    <ol class="hang">
+      {artists.map((a, i) => {
+        const lead = getLead(a);
+        // At scale on the eye line: a 26 cm print hangs smaller than a 300 cm canvas. The square root keeps small works legible.
+        const scale = lead.size ? Math.min(1, Math.max(0.5, Math.sqrt(lead.size[0] / 250))) : 1;
+        return (<>
+          <li style={`--r:${lead.ratio};--s:${scale.toFixed(3)}`}>
+            <a class="piece-link" href={roomHref(a)}>
+              <span class="frame"><Work piece={lead} still sizes="(min-width: 1024px) 30vw, 50vw" /></span>
+              <span class="cap">
+                <span class="cap-title">{a.wing}</span>
+                <span class="small muted">In the manner of {a.name}</span>
+              </span>
+            </a>
+          </li>
+          {i % 2 === 1 && <li class="pair-break" aria-hidden="true"></li>}
+        </>);
+      })}
+    </ol>
+  </section>
+</Museum>
+
+<style>
+  /* The entrance opens on one painting, staged the way every piece page is, before anything is said. */
+  .arrival { padding: 8px var(--m) 0; }
+  .arrival figure { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .arrival .piece-link { display: block; width: min(100%, calc((100svh - var(--header) - 160px) * var(--r))); }
+  .arrival figcaption { width: 100%; }
+  .arrival figcaption :global(.tombstone) { max-width: none; }
+  @media (min-width: 900px) {
+    .arrival { min-height: calc(100svh - var(--header)); display: flex; align-items: center; justify-content: center; padding: 0 var(--m) 40px; }
+    .arrival figure { flex-direction: row; align-items: flex-end; justify-content: center; gap: 32px; }
+    .arrival .piece-link { flex: none; width: min(calc(100vw - 80px - 312px), calc((100svh - var(--header) - 80px) * var(--r))); }
+    .arrival figcaption { width: 280px; flex: none; }
+    .arrival figcaption :global(.tombstone) { max-width: 280px; }
+  }
+
+  /* Then the statement, where the wall text hangs in a room. */
+  .entrance { margin-top: 96px; row-gap: 24px; }
+  .statement { text-wrap: balance; }
+  .premise { display: grid; gap: 24px; }
+  @media (min-width: 900px) {
+    .entrance { margin-top: 12svh; }
+    .statement, .premise { grid-column: 3 / 9; }
+  }
+
+  .rooms { margin-top: 96px; }
+  @media (min-width: 1024px) { .rooms { margin-top: 160px; } }
+  .rooms > p { margin-bottom: 40px; }
+
+  /* The line hang: every lead work at its true shape, rows of equal height, nothing cropped. */
+  .hang { --row-h: calc((100vw - 32px) * 0.4); display: flex; flex-wrap: wrap; align-items: flex-start; gap: 48px 16px; }
+  .hang::after { content: ''; flex-grow: 1000000; }
+  .hang li { --s: 1; flex: calc(var(--r) * var(--s) * 100) 1 calc(var(--r) * var(--s) * var(--row-h)); min-width: 0; }
+  .hang a { display: block; }
+  /* Each work hangs centred in a frame the height of the row's tallest work, so centres share the eye line and captions share a baseline. */
+  .frame { display: flex; align-items: center; aspect-ratio: calc(var(--r) * var(--s)); }
+  .frame :global(.work) { width: 100%; }
+  /* A caption names the room and its painter, nothing more; the room's number waits on its door. */
+  .cap { display: grid; margin-top: 12px; }
+  .cap-title { font-family: var(--serif); font-size: 17px; line-height: 22px; }
+  /* On a phone the hang runs in pairs: two works per row, still at their true shapes and equal heights. */
+  .pair-break { display: none; }
+  @media (max-width: 599px) {
+    .hang { row-gap: 32px; }
+    .hang li { flex: calc(var(--r) * var(--s) * 100) 1 0; }
+    .hang .pair-break { display: block; flex: 0 0 100%; height: 0; }
+    .hang::after { display: none; }
+  }
+  @media (min-width: 600px) { .hang { --row-h: 200px; gap: 64px 24px; } }
+  @media (min-width: 1024px) { .hang { --row-h: 280px; gap: 72px 40px; } }
+</style>

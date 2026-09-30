@@ -1,0 +1,31 @@
+---
+import MotionScript from './MotionScript.astro';
+/**
+ * One painting, whole. The <img> sets the size; a moving piece lays its <video> over the still at the same geometry
+ * and only starts once someone has stood in front of it for a moment (see MotionScript).
+ */
+const { piece, eager = false, sizes, class: cls = '', transition = true, still = false } = Astro.props;
+const moving = piece.motion && !still;
+const vt = transition ? `view-transition-name: w-${piece.artistId}-${piece.id};` : '';
+const motionId = `m-${piece.artistId}-${piece.id}`;
+---
+{piece.image ? (
+  <span class:list={['work', cls]} style={`--r:${piece.ratio};${vt}`}>
+    <img
+      src={piece.image.src}
+      width={piece.image.width}
+      height={piece.image.height}
+      alt={piece.alt}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding={eager ? 'sync' : 'async'}
+      fetchpriority={eager ? 'high' : undefined}
+      sizes={sizes}
+    />
+    {moving && (
+      <video id={motionId} class="motion" muted loop playsinline preload="none" data-src={piece.motion} width={piece.image.width} height={piece.image.height} aria-hidden="true" tabindex="-1"></video>
+    )}
+  </span>
+) : (
+  <span class:list={['work', 'empty', cls]} style={`--r:${piece.ratio};${vt}`} role="img" aria-label={`${piece.title}: commissioned, not yet painted`}></span>
+)}
+{moving && piece.image && <MotionScript />}
