@@ -1,0 +1,50 @@
+---
+import Museum from '../../layouts/Museum.astro';
+import { url } from '../../lib/collection.js';
+---
+<Museum title="Impressum" description="Anbieterkennzeichnung und verantwortliche Person für dieses Museum." rel={{ up: url('/') }}>
+  <article class="legal page cols">
+    <h1 class="statement">Impressum</h1>
+    <p class="small muted">Legal notice, required under German law. The museum is run privately from Berlin.</p>
+
+    <section>
+      <h2 class="label h">Angaben gemäß § 5 DDG</h2>
+      <p class="text">
+        Stanislav Kulik<br />
+        Elßholzstraße 8<br />
+        10781 Berlin<br />
+        Deutschland
+      </p>
+    </section>
+
+    <section>
+      <h2 class="label h">Kontakt</h2>
+      <p class="text">E-Mail: <a class="u" href="mailto:mail@stanislavkulik.de">mail@stanislavkulik.de</a></p>
+    </section>
+
+    <section>
+      <h2 class="label h">Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+      <p class="text">Stanislav Kulik, Anschrift wie oben.</p>
+    </section>
+
+    <section>
+      <h2 class="label h">Zu den Werken</h2>
+      <div class="text prose">
+        <p>Alle hier gezeigten Bilder sind neue Arbeiten „in der Art“ eines Malers oder einer Malerin, nach schriftlichen Vorgaben mit Bild- und Videomodellen erzeugt und vom Kurator ausgewählt. Kein Gemälde einer namentlich genannten Person wird reproduziert. Das Museum steht in keiner Verbindung zu den genannten Künstlerinnen und Künstlern, ihren Nachlässen oder Stiftungen. Raumtitel, Wandtexte und Beschriftungen stammen vom Kurator.</p>
+        <p>Sollte ein Rechteinhaber der Auffassung sein, dass ein Werk Rechte verletzt, genügt eine E-Mail. Das Werk wird dann geprüft und gegebenenfalls abgehängt.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="label h">Haftung für Links</h2>
+      <p class="text">Diese Seite verweist auf wenige externe Angebote. Für deren Inhalte sind die jeweiligen Anbieter verantwortlich; zum Zeitpunkt der Verlinkung waren keine Rechtsverstöße erkennbar.</p>
+    </section>
+  </article>
+</Museum>
+
+<style>
+  .legal { padding-top: 48px; row-gap: 40px; }
+  @media (min-width: 900px) { .legal > * { grid-column: 3 / 9; } .legal { padding-top: 64px; } }
+  .h { font-weight: 600; margin-bottom: 12px; }
+  .prose p + p { margin-top: 1em; }
+</style>

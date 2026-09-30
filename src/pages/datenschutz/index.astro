@@ -1,0 +1,50 @@
+---
+import Museum from '../../layouts/Museum.astro';
+import { url } from '../../lib/collection.js';
+---
+<Museum title="Datenschutz" description="Welche Daten beim Besuch dieses Museums anfallen, und welche nicht." rel={{ up: url('/') }}>
+  <article class="legal page cols">
+    <h1 class="statement">Datenschutz</h1>
+    <p class="small muted">Privacy notice. In short: this site sets no cookies and runs no analytics; the host keeps ordinary server logs.</p>
+
+    <section>
+      <h2 class="label h">Verantwortlicher</h2>
+      <p class="text">
+        Stanislav Kulik<br />
+        Elßholzstraße 8<br />
+        10781 Berlin<br />
+        E-Mail: <a class="u" href="mailto:mail@stanislavkulik.de">mail@stanislavkulik.de</a>
+      </p>
+    </section>
+
+    <section>
+      <h2 class="label h">Was diese Seite nicht tut</h2>
+      <p class="text">Diese Seite setzt keine Cookies, verwendet keine Analyse- oder Tracking-Dienste, bindet keine Schriften, Skripte oder Medien von Dritten ein und enthält keine Kontaktformulare oder Kommentarfunktionen. Schriften und Bilder werden von dieser Seite selbst ausgeliefert.</p>
+    </section>
+
+    <section>
+      <h2 class="label h">Hosting und Server-Protokolle</h2>
+      <div class="text prose">
+        <p>Die Seite wird als statische Website über GitHub Pages bereitgestellt, einen Dienst der GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. Beim Aufruf übermittelt Ihr Browser technisch bedingt Daten an die Server von GitHub, insbesondere Ihre IP-Adresse, Datum und Uhrzeit des Zugriffs, die aufgerufene Adresse, den verwendeten Browser und die zuvor besuchte Seite. GitHub speichert diese Angaben in Server-Protokollen, um den Dienst bereitzustellen und abzusichern.</p>
+        <p>Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; das berechtigte Interesse liegt in der sicheren und effizienten Bereitstellung der Seite. Die Übermittlung in die USA stützt sich auf das EU-US Data Privacy Framework, unter dem GitHub zertifiziert ist. Näheres steht in der <a href="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement">Datenschutzerklärung von GitHub</a>. Auf Inhalt und Dauer dieser Protokolle hat der Betreiber dieser Seite keinen Zugriff.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="label h">Kontakt per E-Mail</h2>
+      <p class="text">Wenn Sie eine E-Mail schreiben, werden Ihre Adresse und der Inhalt der Nachricht zur Beantwortung gespeichert (Art. 6 Abs. 1 lit. f DSGVO) und gelöscht, sobald die Anfrage erledigt ist und keine gesetzlichen Aufbewahrungspflichten entgegenstehen.</p>
+    </section>
+
+    <section>
+      <h2 class="label h">Ihre Rechte</h2>
+      <p class="text">Sie haben das Recht auf Auskunft über die Sie betreffenden Daten, auf Berichtigung, Löschung und Einschränkung der Verarbeitung, auf Datenübertragbarkeit sowie auf Widerspruch gegen eine Verarbeitung auf Grundlage berechtigter Interessen. Außerdem können Sie sich bei einer Datenschutz-Aufsichtsbehörde beschweren, in Berlin bei der Berliner Beauftragten für Datenschutz und Informationsfreiheit.</p>
+    </section>
+  </article>
+</Museum>
+
+<style>
+  .legal { padding-top: 48px; row-gap: 40px; }
+  @media (min-width: 900px) { .legal > * { grid-column: 3 / 9; } .legal { padding-top: 64px; } }
+  .h { font-weight: 600; margin-bottom: 12px; }
+  .prose p + p { margin-top: 1em; }
+</style>
