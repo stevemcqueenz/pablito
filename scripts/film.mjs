@@ -1,9 +1,10 @@
 // A short silent film of the museum, for sharing: the entrance painting, one wall text, then a walk
 // through the rooms in the order the painters were born, each painting whole on its room's wall.
 //
-//   node scripts/film.mjs            # both cuts
-//   node scripts/film.mjs wide       # 1920 × 1080 only
-//   node scripts/film.mjs tall       # 1080 × 1920 only
+//   node scripts/film.mjs            # all three cuts
+//   node scripts/film.mjs wide       # 1920 × 1080, the whole walk
+//   node scripts/film.mjs tall       # 1080 × 1920, the whole walk
+//   node scripts/film.mjs short      # 1920 × 1080, about twenty seconds, for feeds
 //
 // Needs ffmpeg and a headless Chromium (for the type, set in the site's own fonts):
 //   FFMPEG=/path/to/ffmpeg CHROME=/path/to/chrome node scripts/film.mjs
@@ -73,12 +74,24 @@ const FILM = [
   // The way in.
   { card: [
     { text: museum.name, role: 'wordmark', at: 0.5 },
-    { text: 'stevemcqueenz.github.io/pablito', role: 'address', at: 1.1 },
-  ], wall: GALLERY, ink: INK.dark, seconds: 6.2, fadeOut: 0.6 },
+  ], wall: GALLERY, ink: INK.dark, seconds: 5.5, fadeOut: 0.6 },
   { black: 0.6 },
 ];
 
-// Two cuts. A painting's box is the most room it may take; every painting is scaled to fit it,
+const SHORT = [
+  { black: 0.3 },
+  { room: 'hopper', piece: 'laundromat', still: 1.2, clip: 4.5, fadeIn: 0.4 },
+  { room: 'vermeer', piece: 'video-call', seconds: 8.5, beside: [
+    { text: 'Twenty-five painters, each given a studio in the present day.', at: 0.6 },
+    { text: 'Nothing here reproduces an existing work.', at: 3.2 },
+    { text: 'The painter’s name is never in the prompt.', at: 5.8 },
+  ] },
+  { room: 'goya', piece: 'livestream', still: 1.2, clip: 4 },
+  { card: [{ text: museum.name, role: 'wordmark', at: 0.4 }], wall: GALLERY, ink: INK.dark, seconds: 3.6, fadeOut: 0.6 },
+  { black: 0.4 },
+];
+
+// Three cuts. A painting's box is the most room it may take; every painting is scaled to fit it,
 // uncropped, and centred on the eye line, with its label beneath, flush with its left edge.
 const FORMATS = {
   wide: {
@@ -102,6 +115,10 @@ const FORMATS = {
     },
   },
 };
+// The short cut for feeds: the same frame as the wide cut, a quarter of the walk. It opens on a
+// painting rather than on words, because the first frame is the thumbnail, and the post it sits
+// under supplies the museum's one line.
+FORMATS.short = { ...FORMATS.wide, file: 'pablito-short.mp4', shots: SHORT };
 
 const wanted = process.argv.slice(2).filter((a) => FORMATS[a]);
 const formats = wanted.length ? wanted : Object.keys(FORMATS);
@@ -131,7 +148,7 @@ function place(fmt, shot, meta) {
   if (shot.beside) {
     const b = fmt.beside;
     const h = b.h, w = Math.round(h * r);
-    if (fmt === FORMATS.wide) {
+    if (fmt.width > fmt.height) {
       const x = Math.round((fmt.width - (w + b.gap + b.textW)) / 2);
       const y = Math.round(fmt.eye - h / 2);
       return { x, y, w, h };
@@ -181,7 +198,7 @@ function besideLayer(fmt, artist, at, lines, show) {
   const ink = INK[artist.ink];
   const b = fmt.beside;
   const paras = lines.map((l, i) => `<p style="${style(fmt, 'statement', ink)}visibility:${i === show ? 'visible' : 'hidden'}">${esc(l.text)}</p>`).join('');
-  if (fmt === FORMATS.wide) {
+  if (fmt.width > fmt.height) {
     // Bottom-aligned with the painting's foot, the way the site's piece page sets its label.
     return `<div style="position:absolute;left:${at.x + at.w + b.gap}px;bottom:${fmt.height - (at.y + at.h) - 14}px;width:${b.textW}px">${paras}</div>`;
   }
@@ -248,7 +265,8 @@ async function build(name) {
   // First pass: what each shot needs, and every text layer.
   const layers = [];
   const plans = [];
-  for (const [i, shot] of FILM.entries()) {
+  const shots = fmt.shots || FILM;
+  for (const [i, shot] of shots.entries()) {
     const id = String(i).padStart(2, '0');
     if (shot.black) { plans.push({ id, black: shot.black }); continue; }
     if (shot.card) {
