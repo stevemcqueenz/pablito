@@ -61,6 +61,10 @@ Neither is stored in the repository. Before every build:
 
 Both skip files that are already up to date and take `--force` to redo everything, which you need after changing a room's wall colour.
 
+## The credit inside the files
+
+Every painting in `src/art` carries EXIF and XMP metadata: its title, whose manner it is in, the curator, the address of its page, and the IPTC digital source type for a generated image. `node scripts/credit.mjs` writes it losslessly, replacing only the metadata segments, and is safe to run again after adding a painting. The wallpapers, share images and films get the same credit when they are built.
+
 ## The film
 
 `scripts/film.mjs` cuts a short silent film of the museum from the paintings, their clips and the site's own type, and writes it to `public/film/`, where the site serves it on its film page. It needs ffmpeg and a headless Chromium:

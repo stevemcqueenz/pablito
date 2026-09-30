@@ -11,6 +11,7 @@ import { readFileSync, mkdirSync, existsSync, statSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hang } from './hang.mjs';
+import { creditFor } from './credit.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const collection = JSON.parse(readFileSync(resolve(root, 'src/data/collection.json'), 'utf8'));
@@ -36,17 +37,20 @@ const jobs = [];
 for (const artist of collection.artists) {
   for (const piece of artist.pieces) {
     const source = findImage(artist.id, piece.id);
-    if (source) jobs.push({ source, wall: artist.wall, dir: resolve(root, 'public/og', artist.id), out: `${piece.id}.jpg` });
+    if (source) jobs.push({ source, wall: artist.wall, dir: resolve(root, 'public/og', artist.id), out: `${piece.id}.jpg`, meta: creditFor(artist, piece, 'share image') });
   }
 }
 const entrance = findImage(ENTRANCE.artist, ENTRANCE.piece);
-if (entrance) jobs.push({ source: entrance, wall: ENTRANCE.wall, dir: resolve(root, 'public/og'), out: 'pablito.jpg' });
+if (entrance) {
+  const a = collection.artists.find((x) => x.id === ENTRANCE.artist);
+  jobs.push({ source: entrance, wall: ENTRANCE.wall, dir: resolve(root, 'public/og'), out: 'pablito.jpg', meta: creditFor(a, a.pieces.find((p) => p.id === ENTRANCE.piece), 'share image') });
+}
 
 for (const job of jobs) {
   mkdirSync(job.dir, { recursive: true });
   const out = resolve(job.dir, job.out);
   if (fresh(out, job.source)) { skipped++; continue; }
-  await hang(job.source, job.wall, CARD, out, { quality: 84 });
+  await hang(job.source, job.wall, CARD, out, { quality: 84, credit: job.meta });
   made++;
 }
 console.log(`og: ${made} written, ${skipped} up to date`);

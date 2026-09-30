@@ -50,4 +50,4 @@ To run the museum yourself, add a painting, or set one in motion, see [the works
 
 ## What this is and is not
 
-Every work is a new commission in the manner of a painter, most of them long out of copyright, made with image and video models from written briefs. No painting by any named artist is reproduced, and the museum is not affiliated with any painter, estate or foundation. The room titles, wall texts and labels are written by the curator. The name on each label says "in the manner of", and means it.
+Every work is a new commission in the manner of a painter, most of them long out of copyright, made with image and video models from written briefs. No painting by any named artist is reproduced, and the museum is not affiliated with any painter, estate or foundation. The room titles, wall texts and labels are written by the curator. The name on each label says "in the manner of", and means it. Every file the museum serves, painting, wallpaper or film, carries that credit in its own metadata.

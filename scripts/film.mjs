@@ -352,6 +352,9 @@ async function build(name) {
     '-vf', 'scale=out_color_matrix=bt709:out_range=tv,format=yuv420p',
     '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-r', String(FPS),
     '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv',
+    '-metadata', `title=${museum.name}: ${museum.tagline}`,
+    '-metadata', 'artist=Pablito, curated by Stanislav Kulik',
+    '-metadata', 'copyright=(c) 2026 Stanislav Kulik. Every painting is a new work in the manner of its painter, rendered with an image model. https://stevemcqueenz.github.io/pablito/',
     '-movflags', '+faststart', '-an', out]);
   const total = plans.reduce((s, p) => s + frames(p.black || p.seconds), 0) / FPS;
   console.log(`film: ${fmt.file}, ${total.toFixed(2)} s`);

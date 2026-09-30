@@ -4,7 +4,7 @@
 //   node scripts/wallpapers.mjs klimt      # one room
 //   node scripts/wallpapers.mjs klimt the-selfie --force
 //
-// Nothing is cropped and nothing is written on the wall. The painting keeps
+// Nothing is cropped and nothing is written on the wall; the credit is inside the file. The painting keeps
 // its proportions, sits on the room's wall colour, and the file goes to
 // public/wallpapers/<artist>/<piece>-<size>.jpg, which is ignored by git and
 // regenerated before every build.
@@ -13,6 +13,7 @@ import { readFileSync, mkdirSync, existsSync, statSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hang } from './hang.mjs';
+import { creditFor } from './credit.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const collection = JSON.parse(readFileSync(resolve(root, 'src/data/collection.json'), 'utf8'));
@@ -51,7 +52,7 @@ for (const artist of collection.artists) {
     for (const [name, size] of Object.entries(SIZES)) {
       const out = resolve(dir, `${piece.id}-${name}.jpg`);
       if (!force && existsSync(out) && statSync(out).mtimeMs >= statSync(source).mtimeMs) { skipped++; continue; }
-      await hang(source, artist.wall, size, out);
+      await hang(source, artist.wall, size, out, { credit: creditFor(artist, piece, 'wallpaper') });
       made++;
     }
   }
