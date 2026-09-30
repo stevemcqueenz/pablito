@@ -1,0 +1,40 @@
+---
+import Museum from '../../layouts/Museum.astro';
+import { url } from '../../lib/collection.js';
+
+// The film: the entrance painting coming alive, one wall text beside a painting that shows it,
+// and a walk through nine rooms. Cut to the museum's rules: nothing moves but the paintings.
+const cuts = [
+  { file: 'pablito.mp4', name: 'The walk', note: '1920 × 1080, 69 seconds' },
+  { file: 'pablito-vertical.mp4', name: 'The walk, upright', note: '1080 × 1920, 69 seconds' },
+  { file: 'pablito-short.mp4', name: 'The short cut', note: '1920 × 1080, 24 seconds' },
+];
+---
+<Museum title="The film" description="A short silent film of the museum: the entrance painting coming alive, and a walk through nine rooms." rel={{ up: url('/') }}>
+  <article class="film page cols">
+    <h1 class="statement">The film</h1>
+    <video class="screen" controls playsinline preload="metadata" poster={url('/film/poster.jpg')} width="1920" height="1080">
+      <source src={url('/film/pablito.mp4')} type="video/mp4" />
+      <a class="u" href={url('/film/pablito.mp4')}>Download the film</a>
+    </video>
+    <p class="text">Sixty-nine seconds, silent. The entrance painting, one wall text, then a walk through nine rooms in the order the painters were born. Nothing moves but the paintings.</p>
+    <ul class="cuts label">
+      {cuts.map((c) => (
+        <li>
+          <a class="u" href={url(`/film/${c.file}`)} download>{c.name}</a>
+          <span class="muted">{c.note}</span>
+        </li>
+      ))}
+    </ul>
+  </article>
+</Museum>
+
+<style>
+  .film { padding-top: 48px; row-gap: 24px; }
+  @media (min-width: 900px) { .film > * { grid-column: 2 / 12; } .film { padding-top: 64px; } }
+  .screen { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000; }
+  .text { font-family: var(--serif); font-size: 19px; line-height: 29px; max-width: 40em; }
+  .cuts { display: grid; gap: 6px; margin-top: 8px; }
+  .cuts li { display: flex; gap: 16px; flex-wrap: wrap; }
+  @media (min-width: 900px) { .text { font-size: 21px; line-height: 32px; } }
+</style>

@@ -9,7 +9,7 @@
 // Needs ffmpeg and a headless Chromium (for the type, set in the site's own fonts):
 //   FFMPEG=/path/to/ffmpeg CHROME=/path/to/chrome node scripts/film.mjs
 // Work files go to $FILM_WORK (default: a folder in the system temp directory).
-// The films go to docs/film/pablito.mp4 and docs/film/pablito-vertical.mp4.
+// The films go to public/film/, where the site serves them from its own film page.
 //
 // The film is cut to the museum's rules:
 // - Only two things move: the paintings' own clips, and text, which only fades, in 400 ms.
@@ -33,7 +33,7 @@ const { museum, artists } = JSON.parse(readFileSync(resolve(root, 'src/data/coll
 const FFMPEG = process.env.FFMPEG || 'ffmpeg';
 const CHROME = process.env.CHROME || 'chromium';
 const WORK = process.env.FILM_WORK || join(tmpdir(), 'pablito-film');
-const OUT = resolve(root, 'docs/film');
+const OUT = resolve(root, 'public/film');
 const FPS = 24;
 
 // The house colours: the rooms' two inks and the public spaces' white (see Museum.astro).

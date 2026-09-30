@@ -61,6 +61,17 @@ Neither is stored in the repository. Before every build:
 
 Both skip files that are already up to date and take `--force` to redo everything, which you need after changing a room's wall colour.
 
+## The film
+
+`scripts/film.mjs` cuts a short silent film of the museum from the paintings, their clips and the site's own type, and writes it to `public/film/`, where the site serves it on its film page. It needs ffmpeg and a headless Chromium:
+
+```
+FFMPEG=/path/to/ffmpeg CHROME=/path/to/chrome node scripts/film.mjs          # all three cuts
+FFMPEG=/path/to/ffmpeg CHROME=/path/to/chrome node scripts/film.mjs short    # the short cut alone
+```
+
+The shots are plain data at the top of the script: a room and a work, how long the still holds and how long it moves, and any sentences set beside it. The film keeps the museum's rules. Nothing moves but the paintings and text, which only fades. Every painting is whole, at its own proportions, on its room's wall, with its label. Cuts are hard, and the wall colour changing is the transition. Clips whose camera drifts are shown as stills.
+
 ## House rules for every commission
 
 1. Never name the painter in a prompt. Describe the hand, the light, the palette and the surface instead.

@@ -6,7 +6,7 @@
 
 <p align="center">A museum of paintings that were never painted.</p>
 
-<p align="center"><a href="https://stevemcqueenz.github.io/pablito/">Visit the museum</a></p>
+<p align="center"><a href="https://stevemcqueenz.github.io/pablito/">Visit the museum</a> · <a href="https://stevemcqueenz.github.io/pablito/film/">Watch the film</a></p>
 
 <br>
 
@@ -26,6 +26,14 @@ Twenty-five rooms in the order the painters were born, from Bruegel, c. 1525, to
 - **25 moving paintings**, one per room. The still shows first; the clip begins once you have looked for a moment. Downloads are always the still.
 - **Wallpapers** for phone, Mac and wide screens, generated at build: the painting hung on its room's wall, nothing written on it.
 - **A list of works** with every catalogue entry, and a colophon.
+
+## The film
+
+<p align="center">
+  <a href="https://stevemcqueenz.github.io/pablito/film/"><img src="docs/readme/film.jpg" alt="Woman on a Video Call, in the manner of Johannes Vermeer, on its room's blue-grey wall, with the museum's three sentences beside it" width="100%"></a>
+</p>
+
+Sixty-nine seconds, silent. The entrance painting coming alive, one wall text, then a walk through nine rooms. Nothing moves but the paintings. [Watch it in the museum](https://stevemcqueenz.github.io/pablito/film/), or open [the film](public/film/pablito.mp4), [the upright cut](public/film/pablito-vertical.mp4) or [the short cut](public/film/pablito-short.mp4) here.
 
 ## How a painting is commissioned
 
