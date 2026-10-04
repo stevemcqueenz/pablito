@@ -2,7 +2,7 @@
 import Museum from '../../../layouts/Museum.astro';
 import Work from '../../../components/Work.astro';
 import Tombstone from '../../../components/Tombstone.astro';
-import { exhibitions, getShowWorks, getShowLead, showInfo, showHref, showDates, showStatus, showNumber, inWords, capitalise, url } from '../../../lib/collection.js';
+import { exhibitions, getShowWorks, getShowLead, showInfo, showHref, showDates, showStatus, showNumber, inWords, capitalise, isGuest, url } from '../../../lib/collection.js';
 export function getStaticPaths() {
   return exhibitions.map((s) => ({ params: { show: s.id }, props: { show: s } }));
 }
@@ -12,7 +12,9 @@ const info = showInfo(show);
 const status = showStatus(show);
 const lead = getShowLead(show);
 const hung = works.filter((w) => w.image).length;
-const count = hung === works.length ? `${capitalise(inWords(works.length))} works, one by each painter in the building.` : hung ? `${capitalise(inWords(works.length))} works commissioned, ${inWords(hung)} painted so far.` : `${capitalise(inWords(works.length))} works commissioned. None painted yet.`;
+const visiting = works.filter((w) => isGuest(w.artist)).length;
+const who = visiting ? `one by each painter in the building and ${inWords(visiting)} by visiting painters` : 'one by each painter in the building';
+const count = hung === works.length ? `${capitalise(inWords(works.length))} works, ${who}.` : hung ? `${capitalise(inWords(works.length))} works commissioned, ${inWords(hung)} painted so far.` : `${capitalise(inWords(works.length))} works commissioned. None painted yet.`;
 const share = { title: `${show.title} — ${show.subtitle}`, ...(lead.image && { image: url(`/og/exhibitions/${show.id}/${lead.artistId}.jpg`), alt: `${lead.alt}, on the wall of the exhibition ${show.title}` }) };
 ---
 <Museum kind="show" title={show.title} description={show.wallText} show={info} share={share} rel={{ prev: url('/exhibitions/'), next: works[0]?.href, up: url('/exhibitions/') }}>

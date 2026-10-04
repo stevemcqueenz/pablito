@@ -15,6 +15,8 @@ import piexif from 'piexifjs';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const collection = JSON.parse(readFileSync(resolve(root, 'src/data/collection.json'), 'utf8'));
 
+const painter = (id) => collection.artists.find((a) => a.id === id) ?? (collection.exhibitions ?? []).flatMap((s) => s.guests ?? []).find((g) => g.id === id);
+
 export const SITE = 'https://stevemcqueenz.github.io/pablito/';
 export const CURATOR = 'Stanislav Kulik';
 const YEAR = 2026;
@@ -144,7 +146,7 @@ export function allWorks() {
   }
   for (const show of collection.exhibitions ?? []) {
     for (const work of show.works) {
-      const artist = collection.artists.find((a) => a.id === work.artist);
+      const artist = painter(work.artist);
       const file = findImage(`exhibitions/${show.id}`, artist.id);
       if (file) out.push({ file, artist, piece: work, meta: creditFor(artist, work, 'painting', showWeb(show, artist)) });
     }

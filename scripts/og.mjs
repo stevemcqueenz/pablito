@@ -16,6 +16,7 @@ import { creditFor, showWeb } from './credit.mjs';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const collection = JSON.parse(readFileSync(resolve(root, 'src/data/collection.json'), 'utf8'));
 const force = process.argv.includes('--force');
+const painter = (id) => collection.artists.find((a) => a.id === id) ?? (collection.exhibitions ?? []).flatMap((s) => s.guests ?? []).find((g) => g.id === id);
 
 // Wide and shallow, so the painting keeps a margin of wall on every side even where a feed crops the card.
 const CARD = { width: 1200, height: 630, box: [0.8, 0.78], centreY: 0.5 };
@@ -42,7 +43,7 @@ for (const artist of collection.artists) {
 }
 for (const show of collection.exhibitions ?? []) {
   for (const work of show.works) {
-    const artist = collection.artists.find((a) => a.id === work.artist);
+    const artist = painter(work.artist);
     const source = findImage(`exhibitions/${show.id}`, artist.id);
     if (source) jobs.push({ source, wall: show.wall, dir: resolve(root, 'public/og/exhibitions', show.id), out: `${artist.id}.jpg`, meta: creditFor(artist, work, 'share image', showWeb(show, artist)) });
   }

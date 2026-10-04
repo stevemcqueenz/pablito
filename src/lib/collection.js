@@ -30,8 +30,20 @@ export function buildPrompt(artist, piece) {
   return `${piece.subject}. ${artist.styleBrief}. ${artist.renderSuffix}.`;
 }
 
+/** A show may invite painters who have no room: they are listed on the show as guests. */
+export const guests = (collection.exhibitions ?? []).flatMap((s) => (s.guests ?? []).map((g) => ({ ...g, guestOf: s.id })));
+
 export function getArtist(id) {
-  return artists.find((a) => a.id === id);
+  return artists.find((a) => a.id === id) ?? guests.find((g) => g.id === id);
+}
+
+export const isGuest = (artist) => Boolean(artist.guestOf);
+
+/** The year a painter was born, from "c. 1525 – 1569" or "b. 1937", unless the entry says. */
+export function bornYear(artist) {
+  if (artist.born) return artist.born;
+  const m = artist.years.match(/\d{4}/);
+  return m ? Number(m[0]) : 0;
 }
 
 /** "1882 – 1967" becomes "1882–1967", the way a label sets it. */
@@ -163,8 +175,8 @@ function findShowMotion(showId, artistId) {
 
 function buildShowWorks(show) {
   const n = showNumber(show);
-  const order = (w) => artists.findIndex((a) => a.id === w.artist);
-  // Hung in the order the painters were born, whatever order the file lists them in.
+  // Hung in the order the painters were born, guests among them, whatever order the file lists them in.
+  const order = (w) => bornYear(getArtist(w.artist)) * 100 + Math.max(0, artists.findIndex((a) => a.id === w.artist));
   return [...show.works].sort((a, b) => order(a) - order(b)).map((w, i) => {
     const artist = getArtist(w.artist);
     const image = findShowImage(show.id, artist.id);
@@ -188,7 +200,7 @@ function buildShowWorks(show) {
       motion: findShowMotion(show.id, artist.id),
       prompt: buildPrompt(artist, w),
       alt: `${w.title}, in the manner of ${artist.name}`,
-      credit: `Commissioned for ${show.title}, 2026.`,
+      credit: isGuest(artist) ? `Commissioned for ${show.title}, 2026.\nVisiting painter.` : `Commissioned for ${show.title}, 2026.`,
     };
   });
 }

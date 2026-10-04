@@ -28,6 +28,7 @@ export const SIZES = {
   wide: { width: 3840, height: 2160, box: [0.78, 0.70], centreY: 0.50 },
 };
 
+const painter = (id) => collection.artists.find((a) => a.id === id) ?? (collection.exhibitions ?? []).flatMap((s) => s.guests ?? []).find((g) => g.id === id);
 const args = process.argv.slice(2);
 const force = args.includes('--force');
 const [onlyArtist, onlyPiece] = args.filter((a) => !a.startsWith('--'));
@@ -61,7 +62,7 @@ for (const show of collection.exhibitions ?? []) {
   if (onlyArtist && show.id !== onlyArtist) continue;
   for (const work of show.works) {
     if (onlyPiece && work.artist !== onlyPiece) continue;
-    const artist = collection.artists.find((a) => a.id === work.artist);
+    const artist = painter(work.artist);
     const source = findImage(`exhibitions/${show.id}`, artist.id);
     if (!source) continue;
     const dir = resolve(root, 'public/wallpapers/exhibitions', show.id);

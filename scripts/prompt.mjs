@@ -29,9 +29,11 @@ if (showId) {
   const show = (c.exhibitions ?? []).find((s) => s.id === showId);
   if (!show) { console.error(`Unknown show "${showId}". Known: ${(c.exhibitions ?? []).map((s) => s.id).join(', ')}`); process.exit(1); }
   const [only] = positional;
-  const order = (w) => c.artists.findIndex((a) => a.id === w.artist);
+  const painter = (id) => c.artists.find((a) => a.id === id) ?? (show.guests ?? []).find((g) => g.id === id);
+  const born = (a) => a.born ?? Number((a.years.match(/\d{4}/) ?? [0])[0]);
+  const order = (w) => born(painter(w.artist));
   jobs = [...show.works].sort((a, b) => order(a) - order(b)).filter((w) => !only || w.artist === only)
-    .map((w) => ({ artist: c.artists.find((a) => a.id === w.artist), piece: w, filed: `exhibitions/${show.id}/${w.artist}` }));
+    .map((w) => ({ artist: painter(w.artist), piece: w, filed: `exhibitions/${show.id}/${w.artist}` }));
   if (!jobs.length) { console.error(`No work for "${only}" in ${show.id}`); process.exit(1); }
 } else {
   const [artistId, pieceId] = positional;

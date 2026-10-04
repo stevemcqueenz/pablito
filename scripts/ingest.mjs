@@ -35,7 +35,7 @@ if (showId) {
   const show = (collection.exhibitions ?? []).find((s) => s.id === showId);
   if (!show) { console.error(`Unknown show "${showId}". Known: ${(collection.exhibitions ?? []).map((s) => s.id).join(', ')}`); process.exit(1); }
   const [artistId, src] = positional;
-  artist = collection.artists.find((a) => a.id === artistId);
+  artist = collection.artists.find((a) => a.id === artistId) ?? (show.guests ?? []).find((g) => g.id === artistId);
   piece = artist && show.works.find((w) => w.artist === artist.id);
   if (!piece) { console.error(`No work for "${artistId}" in ${show.id}. Known: ${show.works.map((w) => w.artist).join(', ')}`); process.exit(1); }
   source = src;
