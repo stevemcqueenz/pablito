@@ -1,15 +1,16 @@
 ---
 import { getPieces } from '../lib/collection.js';
-/** "In this room": the room's works as a miniature line hang, true ratios, one line. */
-const { artist, current = null } = Astro.props;
-const pieces = getPieces(artist);
+/** "In this room": the room's works as a miniature line hang, true ratios, one line. A show passes its own works and label. */
+const { artist = null, pieces: given = null, current = null, label = 'In this room' } = Astro.props;
+const pieces = given ?? getPieces(artist);
+const here = (p) => current === (p.key ?? p.id);
 ---
-<nav class="strip" aria-label="In this room">
-  <p class="small muted">In this room</p>
+<nav class="strip" aria-label={label}>
+  <p class="small muted">{label}</p>
   <ol>
     {pieces.map((p) => (
-      <li class:list={{ here: current === p.id }}>
-        <a href={p.href} aria-current={current === p.id ? 'page' : undefined}>
+      <li class:list={{ here: here(p) }}>
+        <a href={p.href} aria-current={here(p) ? 'page' : undefined}>
           {p.image
             ? <img src={p.image.src} width={p.image.width} height={p.image.height} alt={p.title} loading="lazy" decoding="async" style={`aspect-ratio:${p.ratio}`} />
             : <span class="hole" style={`aspect-ratio:${p.ratio}`}></span>}

@@ -19,16 +19,22 @@ export const SITE = 'https://stevemcqueenz.github.io/pablito/';
 export const CURATOR = 'Stanislav Kulik';
 const YEAR = 2026;
 
-/** The words for one work. kind: 'painting' | 'wallpaper' | 'share image'. */
-export function creditFor(artist, piece, kind = 'painting') {
+/** The address of a work in a show. */
+export function showWeb(show, artist) {
+  return `${SITE}exhibitions/${show.id}/${artist.id}/`;
+}
+
+/** The words for one work. kind: 'painting' | 'wallpaper' | 'share image'. web: the work's page, if not in the painter's room. */
+export function creditFor(artist, piece, kind = 'painting', web = null) {
   const manner = `in the manner of ${artist.name}`;
+  const page = web ?? `${SITE}${artist.id}/${piece.id}/`;
   const what = kind === 'painting' ? '' : kind === 'wallpaper' ? ' Wallpaper:' : ' Link preview:';
   return {
     title: piece.title,
     creator: `${collection.museum.name}, curated by ${CURATOR}`,
     description: `${what ? what.trim() + ' ' : ''}${piece.title}, ${manner}. A new work commissioned to a written brief and rendered with an image model for ${collection.museum.name}, ${collection.museum.tagline.replace(/\.$/, '').toLowerCase()}. No painting by ${artist.name} is reproduced.`,
-    rights: `© ${YEAR} ${CURATOR}. ${piece.title[0].toUpperCase()}${piece.title.slice(1)}, ${manner}. ${SITE}${artist.id}/${piece.id}/`,
-    web: `${SITE}${artist.id}/${piece.id}/`,
+    rights: `© ${YEAR} ${CURATOR}. ${piece.title[0].toUpperCase()}${piece.title.slice(1)}, ${manner}. ${page}`,
+    web: page,
   };
 }
 
@@ -127,24 +133,40 @@ function findImage(artistId, pieceId) {
   return null;
 }
 
+/** Every painting with the words that belong in it: the rooms, then the shows. */
+export function allWorks() {
+  const out = [];
+  for (const artist of collection.artists) {
+    for (const piece of artist.pieces) {
+      const file = findImage(artist.id, piece.id);
+      if (file) out.push({ file, artist, piece, meta: creditFor(artist, piece) });
+    }
+  }
+  for (const show of collection.exhibitions ?? []) {
+    for (const work of show.works) {
+      const artist = collection.artists.find((a) => a.id === work.artist);
+      const file = findImage(`exhibitions/${show.id}`, artist.id);
+      if (file) out.push({ file, artist, piece: work, meta: creditFor(artist, work, 'painting', showWeb(show, artist)) });
+    }
+  }
+  return out;
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   const show = args.indexOf('--show');
   if (show >= 0) {
-    const [a, p] = args[show + 1].split('/');
-    const file = findImage(a, p);
+    // hopper/laundromat, or exhibitions/formation/hopper
+    const parts = args[show + 1].split('/');
+    const file = findImage(parts.slice(0, -1).join('/'), parts.at(-1));
     const r = readCredit(readFileSync(file));
     console.log(file); console.log(r.exif); console.log(r.xmp);
   } else {
     let n = 0;
-    for (const artist of collection.artists) {
-      for (const piece of artist.pieces) {
-        const file = findImage(artist.id, piece.id);
-        if (!file) continue;
-        const before = readFileSync(file);
-        const after = credit(before, creditFor(artist, piece));
-        if (!before.equals(after)) { writeFileSync(file, after); n++; }
-      }
+    for (const { file, meta } of allWorks()) {
+      const before = readFileSync(file);
+      const after = credit(before, meta);
+      if (!before.equals(after)) { writeFileSync(file, after); n++; }
     }
     console.log(`credit: ${n} files written`);
   }

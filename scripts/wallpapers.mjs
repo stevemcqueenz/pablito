@@ -13,7 +13,7 @@ import { readFileSync, mkdirSync, existsSync, statSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hang } from './hang.mjs';
-import { creditFor } from './credit.mjs';
+import { creditFor, showWeb } from './credit.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const collection = JSON.parse(readFileSync(resolve(root, 'src/data/collection.json'), 'utf8'));
@@ -53,6 +53,23 @@ for (const artist of collection.artists) {
       const out = resolve(dir, `${piece.id}-${name}.jpg`);
       if (!force && existsSync(out) && statSync(out).mtimeMs >= statSync(source).mtimeMs) { skipped++; continue; }
       await hang(source, artist.wall, size, out, { credit: creditFor(artist, piece, 'wallpaper') });
+      made++;
+    }
+  }
+}
+for (const show of collection.exhibitions ?? []) {
+  if (onlyArtist && show.id !== onlyArtist) continue;
+  for (const work of show.works) {
+    if (onlyPiece && work.artist !== onlyPiece) continue;
+    const artist = collection.artists.find((a) => a.id === work.artist);
+    const source = findImage(`exhibitions/${show.id}`, artist.id);
+    if (!source) continue;
+    const dir = resolve(root, 'public/wallpapers/exhibitions', show.id);
+    mkdirSync(dir, { recursive: true });
+    for (const [name, size] of Object.entries(SIZES)) {
+      const out = resolve(dir, `${artist.id}-${name}.jpg`);
+      if (!force && existsSync(out) && statSync(out).mtimeMs >= statSync(source).mtimeMs) { skipped++; continue; }
+      await hang(source, show.wall, size, out, { credit: creditFor(artist, work, 'wallpaper', showWeb(show, artist)) });
       made++;
     }
   }

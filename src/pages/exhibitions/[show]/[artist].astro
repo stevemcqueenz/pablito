@@ -1,0 +1,80 @@
+---
+import Museum from '../../../layouts/Museum.astro';
+import Work from '../../../components/Work.astro';
+import Tombstone from '../../../components/Tombstone.astro';
+import Strip from '../../../components/Strip.astro';
+import { exhibitions, getShowWorks, showInfo, showHref, showNeighbours, url } from '../../../lib/collection.js';
+export function getStaticPaths() {
+  return exhibitions.flatMap((s) => getShowWorks(s).map((w) => ({ params: { show: s.id, artist: w.artistId }, props: { show: s, piece: w } })));
+}
+const { show, piece } = Astro.props;
+const { prev, next } = showNeighbours(piece);
+const info = showInfo(show);
+const walk = {
+  prev: prev ? { href: prev.href, label: prev.title } : { href: showHref(show), label: show.title },
+  next: next ? { href: next.href, label: next.title } : { href: showHref(show), label: show.title },
+};
+const brief = piece.prompt.replace(/(^|\.\s+)([a-z])/g, (m, p, c) => p + c.toUpperCase());
+const share = piece.image ? { title: piece.alt, image: url(`/og/${piece.wallpaperBase}.jpg`), alt: `${piece.alt}, on the wall of the exhibition ${show.title}` } : { title: piece.alt };
+const description = piece.label ?? `${piece.title}, in the manner of ${piece.artist.name}. From the exhibition ${show.title}.`;
+---
+<Museum kind="piece" title={piece.title} description={description} show={info} share={share} rel={{ prev: walk.prev.href, next: walk.next.href, up: `${showHref(show)}#${piece.artistId}` }}>
+  <section class="stage">
+    <figure>
+      <Work piece={piece} eager class="staged" sizes="(min-width: 900px) 70vw, 100vw" />
+      <figcaption><Tombstone piece={piece} stage walk={walk} headingLevel={1} /></figcaption>
+    </figure>
+  </section>
+
+  <section class="beyond page cols">
+    {piece.label && <p class="text extended">{piece.label}</p>}
+    <div class="brief">
+      <h2 class="small muted">The brief</h2>
+      <blockquote><p>{brief}</p></blockquote>
+      <p class="small muted">Written to the house rules. The painter's name does not appear.</p>
+    </div>
+    {piece.image && (
+      <div class="wallpapers">
+        <h2 class="small muted">Take it home</h2>
+        <p class="label">The painting on the exhibition's wall, at its own proportions, nothing written on it.</p>
+        <p class="label links">
+          <a class="u" href={url(`/wallpapers/${piece.wallpaperBase}-phone.jpg`)} download={`pablito-${show.id}-${piece.artistId}-phone.jpg`}>Phone</a>
+          <span aria-hidden="true"> · </span>
+          <a class="u" href={url(`/wallpapers/${piece.wallpaperBase}-mac.jpg`)} download={`pablito-${show.id}-${piece.artistId}-mac.jpg`}>Mac, 16:10</a>
+          <span aria-hidden="true"> · </span>
+          <a class="u" href={url(`/wallpapers/${piece.wallpaperBase}-wide.jpg`)} download={`pablito-${show.id}-${piece.artistId}-wide.jpg`}>Desktop, 16:9</a>
+        </p>
+      </div>
+    )}
+    <div class="room-strip"><Strip pieces={getShowWorks(show)} current={piece.artistId} label="In this exhibition" /></div>
+  </section>
+</Museum>
+
+<style>
+  .stage { padding: 8px var(--m) 0; }
+  figure { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .stage :global(.staged) { width: min(100%, calc((100svh - var(--header) - 160px) * var(--r))); }
+  figcaption { width: 100%; }
+  figcaption :global(.tombstone) { max-width: none; }
+  @media (min-width: 900px) {
+    .stage { min-height: calc(100svh - var(--header)); display: flex; align-items: center; justify-content: center; padding: 0 var(--m) 40px; }
+    figure { flex-direction: row; align-items: flex-end; justify-content: center; gap: 32px; }
+    .stage :global(.staged) { flex: none; width: min(calc(100vw - 80px - 312px), calc((100svh - var(--header) - 80px) * var(--r))); }
+    figcaption { width: 280px; flex: none; }
+    figcaption :global(.tombstone) { max-width: 280px; }
+  }
+  .beyond { margin-top: 64px; row-gap: 48px; }
+  .room-strip { min-width: 0; }
+  @media (min-width: 900px) {
+    .beyond { margin-top: 96px; }
+    .beyond > * { grid-column: 3 / 9; }
+    .beyond > .room-strip { grid-column: 3 / 13; }
+  }
+  .brief h2, .wallpapers h2 { font-weight: 400; }
+  .wallpapers { display: grid; gap: 6px; }
+  .wallpapers .links a { min-height: 32px; display: inline-flex; align-items: center; }
+  blockquote { margin: 8px 0 12px; font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 26px; max-width: 34em; }
+  blockquote p { text-indent: -0.45em; }
+  blockquote p::before { content: '“'; }
+  blockquote p::after { content: '”'; }
+</style>

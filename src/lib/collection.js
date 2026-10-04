@@ -118,3 +118,103 @@ export const capitalise = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 export function roomInfo(artist) {
   return { number: roomNumber(artist), title: artist.wing, href: roomHref(artist), wall: artist.wall ?? '#ffffff', ink: artist.ink ?? 'dark' };
 }
+
+/* Exhibitions. A show is hung from across the painters for a season, each painter sent to the same subject
+   under their own rule. Its works live in src/art/exhibitions/<show>/<painter>.jpg and move from
+   src/motion/exhibitions/<show>/<painter>.mp4. Shows are numbered in the order they open. */
+export const exhibitions = collection.exhibitions ?? [];
+
+export function showHref(show) {
+  return url(`/exhibitions/${show.id}/`);
+}
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+/** "2026-10-18" becomes "18 October 2026". */
+export function longDate(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${d} ${MONTHS[m - 1]} ${y}`;
+}
+
+export function showDates(show) {
+  return show.closes ? `${longDate(show.opens)} – ${longDate(show.closes)}` : `From ${longDate(show.opens)}`;
+}
+
+/** 'upcoming', 'on' or 'past', as of the build. */
+export function showStatus(show, now = new Date()) {
+  if (now < new Date(show.opens)) return 'upcoming';
+  if (show.closes && now > new Date(`${show.closes}T23:59:59`)) return 'past';
+  return 'on';
+}
+
+export function showNumber(show) {
+  return exhibitions.findIndex((s) => s.id === show.id) + 1;
+}
+
+function findShowImage(showId, artistId) {
+  const re = new RegExp(`/art/exhibitions/${showId}/${artistId}\\.(jpg|jpeg|png|webp)$`);
+  const key = Object.keys(files).find((k) => re.test(k));
+  return key ? files[key].default : null;
+}
+
+function findShowMotion(showId, artistId) {
+  const key = Object.keys(motion).find((k) => k.endsWith(`/motion/exhibitions/${showId}/${artistId}.mp4`));
+  return key ? motion[key] : null;
+}
+
+function buildShowWorks(show) {
+  const n = showNumber(show);
+  const order = (w) => artists.findIndex((a) => a.id === w.artist);
+  // Hung in the order the painters were born, whatever order the file lists them in.
+  return [...show.works].sort((a, b) => order(a) - order(b)).map((w, i) => {
+    const artist = getArtist(w.artist);
+    const image = findShowImage(show.id, artist.id);
+    const catNo = `E${n}.${i + 1}`;
+    return {
+      ...w,
+      id: show.id,
+      key: artist.id,
+      index: i,
+      artistId: artist.id,
+      artist,
+      show,
+      catNo,
+      accession: `PAB 2026.${catNo}`,
+      href: url(`/exhibitions/${show.id}/${artist.id}/`),
+      image,
+      ratio: image ? image.width / image.height : ratioOf(artist),
+      size: w.size ?? artist.size ?? null,
+      wallpaper: null,
+      wallpaperBase: `exhibitions/${show.id}/${artist.id}`,
+      motion: findShowMotion(show.id, artist.id),
+      prompt: buildPrompt(artist, w),
+      alt: `${w.title}, in the manner of ${artist.name}`,
+      credit: `Commissioned for ${show.title}, 2026.`,
+    };
+  });
+}
+
+const byShow = new Map(exhibitions.map((s) => [s.id, buildShowWorks(s)]));
+
+export function getShow(id) {
+  return exhibitions.find((s) => s.id === id);
+}
+
+export function getShowWorks(show) {
+  return byShow.get(show.id);
+}
+
+/** The work the show is announced with: its named lead if painted, else the first painted work, else the first. */
+export function getShowLead(show) {
+  const ws = getShowWorks(show);
+  return ws.find((w) => w.artistId === show.lead && w.image) ?? ws.find((w) => w.image) ?? ws[0];
+}
+
+export function showNeighbours(work) {
+  const ws = getShowWorks(work.show);
+  return { prev: ws[work.index - 1] ?? null, next: ws[work.index + 1] ?? null };
+}
+
+/** What the layout needs to paint and name a show. */
+export function showInfo(show) {
+  return { id: show.id, title: show.title, href: showHref(show), wall: show.wall ?? '#ffffff', ink: show.ink ?? 'dark' };
+}

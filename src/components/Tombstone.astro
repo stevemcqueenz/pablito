@@ -28,7 +28,7 @@ const svgW = rect ? Math.ceil(rect.w + 16) : 0;
     </svg>
   )}
   {piece.image
-    ? <p class="small muted credit">Never painted.<br />Commissioned for the collection, 2026.</p>
+    ? <p class="small muted credit">Never painted.<br />{piece.credit ?? 'Commissioned for the collection, 2026.'}</p>
     : <p class="small muted credit">Commissioned. Not yet painted.</p>}
   <p class="small muted">{piece.accession}</p>
   {piece.motion && piece.image && (

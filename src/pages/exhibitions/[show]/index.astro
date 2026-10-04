@@ -1,0 +1,82 @@
+---
+import Museum from '../../../layouts/Museum.astro';
+import Work from '../../../components/Work.astro';
+import Tombstone from '../../../components/Tombstone.astro';
+import { exhibitions, getShowWorks, getShowLead, showInfo, showHref, showDates, showStatus, showNumber, inWords, capitalise, url } from '../../../lib/collection.js';
+export function getStaticPaths() {
+  return exhibitions.map((s) => ({ params: { show: s.id }, props: { show: s } }));
+}
+const { show } = Astro.props;
+const works = getShowWorks(show);
+const info = showInfo(show);
+const status = showStatus(show);
+const lead = getShowLead(show);
+const hung = works.filter((w) => w.image).length;
+const count = hung === works.length ? `${capitalise(inWords(works.length))} works, one by each painter in the building.` : hung ? `${capitalise(inWords(works.length))} works commissioned, ${inWords(hung)} painted so far.` : `${capitalise(inWords(works.length))} works commissioned. None painted yet.`;
+const share = { title: `${show.title} — ${show.subtitle}`, ...(lead.image && { image: url(`/og/exhibitions/${show.id}/${lead.artistId}.jpg`), alt: `${lead.alt}, on the wall of the exhibition ${show.title}` }) };
+---
+<Museum kind="show" title={show.title} description={show.wallText} show={info} share={share} rel={{ prev: url('/exhibitions/'), next: works[0]?.href, up: url('/exhibitions/') }}>
+  <section class="panel page cols">
+    <p class="numeral muted num" aria-hidden="true">E{showNumber(show)}</p>
+    <div class="head">
+      <h1 class="display"><span class="sr-only">Exhibition {showNumber(show)}: </span>{show.title}</h1>
+      <p class="label who">{show.subtitle} · {status === 'upcoming' ? `Opens ${showDates(show).replace(/^From /, '')}` : showDates(show)}</p>
+    </div>
+    <p class="walltext">{show.wallText}</p>
+    <p class="label count">{count}</p>
+  </section>
+
+  <section class="walk page" aria-label="The works">
+    {works.map((p) => (
+      <article class="wall cols" id={p.artistId}>
+        <a class="piece-link hung" href={p.href} tabindex="-1" aria-hidden="true"><Work piece={p} sizes="(min-width: 1024px) 70vw, 100vw" /></a>
+        <div class="ts"><Tombstone piece={p} link headingLevel={2} /></div>
+      </article>
+    ))}
+  </section>
+
+  <section class="rule page cols" aria-label="The brief for this show">
+    <div>
+      <p class="small muted">The brief for this show</p>
+      <p class="title">{show.subject}</p>
+      <p class="small muted note">Every painter received it. Each painted it under the rule of their own room.</p>
+    </div>
+  </section>
+
+  <nav class="show-end page cols" aria-label="Onward">
+    <p class="small"><a class="u" href={url('/exhibitions/')}>All exhibitions</a><span aria-hidden="true"> · </span><a class="u" href={url('/')}>Back to the entrance</a></p>
+  </nav>
+</Museum>
+
+<style>
+  .panel { padding-top: 24px; }
+  .num { margin-bottom: 4px; }
+  .who { margin-top: 16px; }
+  .walltext { margin-top: 32px; }
+  .count { margin-top: 24px; }
+  @media (min-width: 900px) {
+    .panel { padding-top: 64px; align-items: first baseline; }
+    .num { grid-column: 1 / 3; grid-row: 1; margin: 0; }
+    .head { grid-column: 3 / 10; grid-row: 1; }
+    .walltext, .count { grid-column: 3 / 9; }
+  }
+  .walk { margin-top: 48px; display: grid; gap: 72px; }
+  .wall { row-gap: 16px; scroll-margin-top: 24px; }
+  .hung { display: block; }
+  .hung :global(.work) { width: min(100%, calc(60svh * var(--r))); margin-inline: auto; }
+  .wall:has(.hung:hover) :global(cite) { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  .ts :global(.tombstone a:hover cite) { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  @media (min-width: 900px) {
+    .walk { margin-top: 64px; gap: 16svh; }
+    .hung { grid-column: 1 / 10; }
+    .hung :global(.work) { width: min(100%, calc(min(58svh, 640px) * var(--r))); }
+    .ts { grid-column: 10 / 13; align-self: end; }
+  }
+  .rule { margin-top: 12svh; }
+  .rule > div { max-width: 34em; }
+  .rule .title { margin-top: 4px; }
+  .rule .note { margin-top: 8px; }
+  @media (min-width: 900px) { .rule > div { grid-column: 3 / 9; } }
+  .show-end { margin-top: 64px; }
+  @media (min-width: 900px) { .show-end > p { grid-column: 3 / 13; } }
+</style>

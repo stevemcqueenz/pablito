@@ -1,6 +1,6 @@
 ---
 import Museum from '../../layouts/Museum.astro';
-import { artists, getPieces, roomHref, url } from '../../lib/collection.js';
+import { artists, getPieces, roomHref, url, exhibitions, getShowWorks, showHref, showNumber } from '../../lib/collection.js';
 ---
 <Museum title="List of works" description="Every work in the collection, room by room, with catalogue numbers, media and dimensions." rel={{ up: url('/') }}>
   <article class="works page cols">
@@ -21,6 +21,22 @@ import { artists, getPieces, roomHref, url } from '../../lib/collection.js';
               <td class="no"><a href={p.href} tabindex="-1" aria-hidden="true">{p.catNo}</a></td>
               <td class="t"><a href={p.href}><cite>{p.title}</cite></a></td>
               <td class="med muted">{a.medium}</td>
+              <td class="dim muted">{p.size ? `${p.size[0]} × ${p.size[1]} cm` : ''}</td>
+              <td class="mv muted">{p.motion ? 'Moving' : p.image ? '' : 'Not yet painted'}</td>
+            </tr>
+          ))}
+        </tbody>
+      ))}
+      {exhibitions.map((s) => (
+        <tbody>
+          <tr class="room-row">
+            <th colspan="5" scope="rowgroup"><a href={showHref(s)}><span class="rn">E{showNumber(s)}</span>{s.title}, an exhibition</a></th>
+          </tr>
+          {getShowWorks(s).map((p) => (
+            <tr class="work-row">
+              <td class="no"><a href={p.href} tabindex="-1" aria-hidden="true">{p.catNo}</a></td>
+              <td class="t"><a href={p.href}><cite>{p.title}</cite></a><span class="muted">, in the manner of {p.artist.name}</span></td>
+              <td class="med muted">{p.artist.medium}</td>
               <td class="dim muted">{p.size ? `${p.size[0]} × ${p.size[1]} cm` : ''}</td>
               <td class="mv muted">{p.motion ? 'Moving' : p.image ? '' : 'Not yet painted'}</td>
             </tr>

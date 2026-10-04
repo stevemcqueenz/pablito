@@ -1,0 +1,43 @@
+---
+import Museum from '../../layouts/Museum.astro';
+import Work from '../../components/Work.astro';
+import { exhibitions, getShowWorks, getShowLead, showHref, showDates, showStatus, showNumber, inWords, url } from '../../lib/collection.js';
+const shows = exhibitions.map((s) => ({ s, status: showStatus(s), lead: getShowLead(s), works: getShowWorks(s) })).reverse();
+const word = { on: 'Now on', upcoming: 'Opening', past: 'Past' };
+---
+<Museum title="Exhibitions" description="Temporary shows hung from across the painters: one subject, every hand in the building." rel={{ up: url('/') }}>
+  <article class="shows page cols">
+    <h1 class="statement">Exhibitions</h1>
+    <p class="text">A show sends every painter in the building to the same subject for a season, each under their own rule. The rooms stay as they are; the show hangs beside them.</p>
+    <ol class="list">
+      {shows.map(({ s, status, lead, works }) => {
+        const hung = works.filter((w) => w.image).length;
+        return (
+          <li>
+            <a class="piece-link show" href={showHref(s)}>
+              <span class="swatch" style={`--room-wall:${s.wall}`} data-ink={s.ink}><Work piece={lead} still transition={false} sizes="(min-width: 900px) 40vw, 90vw" /></span>
+              <span class="about">
+                <span class="small muted">{word[status]} · Exhibition {showNumber(s)}</span>
+                <span class="plate show-title">{s.title}</span>
+                <span class="label">{s.subtitle}</span>
+                <span class="label muted">{showDates(s)} · {hung === works.length ? `${inWords(works.length)} works` : hung ? `${inWords(hung)} of ${inWords(works.length)} works painted` : `${inWords(works.length)} works, not yet painted`}</span>
+              </span>
+            </a>
+          </li>
+        );
+      })}
+    </ol>
+  </article>
+</Museum>
+<style>
+  .shows { padding-top: 48px; row-gap: 32px; }
+  @media (min-width: 900px) { .shows { padding-top: 64px; } .shows > * { grid-column: 2 / 12; } }
+  .list { display: grid; gap: 48px; margin-top: 16px; }
+  .show { display: grid; gap: 20px; }
+  .swatch { display: block; padding: 24px; background: var(--room-wall); }
+  .swatch :global(.work) { width: min(100%, calc(50svh * var(--r))); margin-inline: auto; }
+  .about { display: grid; gap: 4px; }
+  .show-title { font-style: normal; }
+  .show:hover .show-title, .show:focus-visible .show-title { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  @media (min-width: 900px) { .show { grid-template-columns: 1fr 1fr; align-items: end; gap: 40px; } .swatch { padding: 40px; } }
+</style>

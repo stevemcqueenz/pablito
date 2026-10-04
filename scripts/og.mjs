@@ -11,7 +11,7 @@ import { readFileSync, mkdirSync, existsSync, statSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hang } from './hang.mjs';
-import { creditFor } from './credit.mjs';
+import { creditFor, showWeb } from './credit.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const collection = JSON.parse(readFileSync(resolve(root, 'src/data/collection.json'), 'utf8'));
@@ -38,6 +38,13 @@ for (const artist of collection.artists) {
   for (const piece of artist.pieces) {
     const source = findImage(artist.id, piece.id);
     if (source) jobs.push({ source, wall: artist.wall, dir: resolve(root, 'public/og', artist.id), out: `${piece.id}.jpg`, meta: creditFor(artist, piece, 'share image') });
+  }
+}
+for (const show of collection.exhibitions ?? []) {
+  for (const work of show.works) {
+    const artist = collection.artists.find((a) => a.id === work.artist);
+    const source = findImage(`exhibitions/${show.id}`, artist.id);
+    if (source) jobs.push({ source, wall: show.wall, dir: resolve(root, 'public/og/exhibitions', show.id), out: `${artist.id}.jpg`, meta: creditFor(artist, work, 'share image', showWeb(show, artist)) });
   }
 }
 const entrance = findImage(ENTRANCE.artist, ENTRANCE.piece);

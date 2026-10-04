@@ -11,10 +11,12 @@ import sans from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.w
  * share: { title, image, alt } for link previews; image is a 1200 × 630 file under /og/ (see scripts/og.mjs).
  *        Public pages share the entrance painting on gallery white.
  */
-const { title, description = museum.tagline, room = null, rel = {}, kind = 'public', share = {} } = Astro.props;
+const { title, description = museum.tagline, room = null, show = null, rel = {}, kind = 'public', share = {} } = Astro.props;
+// A show is painted like a room: its wall colour holds for every page in it.
+const paint = room ?? show;
 // Where you are, in one line: the room's place in the building and the door to the next one.
 const onward = room ? artists[room.number] ?? null : null;
-const docTitle = [title, room && `Room ${room.number}`, museum.name].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(' — ');
+const docTitle = [title, room && `Room ${room.number}`, show && show.title, museum.name].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(' — ');
 
 const site = Astro.site ?? new URL(Astro.url.origin);
 const shareTitle = share.title ?? (title ? docTitle : `${museum.name} — ${museum.tagline}`);
@@ -29,7 +31,7 @@ const fonts = `
 `;
 ---
 <!doctype html>
-<html lang="en" data-room={room ? room.number : undefined} data-ink={room ? room.ink : undefined} style={room ? `--room-wall:${room.wall}` : undefined}>
+<html lang="en" data-room={room ? room.number : undefined} data-show={show ? show.id : undefined} data-ink={paint ? paint.ink : undefined} style={paint ? `--room-wall:${paint.wall}` : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -61,14 +63,17 @@ const fonts = `
     <header class="site">
       <a class="wordmark" href={url('/')}>{museum.name}</a>
       {room && kind !== 'room' && <a class="site-here" href={room.href}>Room {room.number} · {room.title}</a>}
+      {show && kind !== 'show' && <a class="site-here" href={show.href}>Exhibition · {show.title}</a>}
       <nav aria-label="Museum">
         <a href={url('/#rooms')}>Rooms</a>
+        <a href={url('/exhibitions/')}><span class="long">Exhibitions</span><span class="short">Shows</span></a>
         <a href={url('/works/')}><span class="long">List of works</span><span class="short">Works</span></a>
         <a href={url('/film/')}>Film</a>
         <a href={url('/about/')}>About</a>
       </nav>
     </header>
     {room && kind !== 'room' && <a class="mobile-here" href={room.href}>Room {room.number} · {room.title}</a>}
+    {show && kind !== 'show' && <a class="mobile-here" href={show.href}>Exhibition · {show.title}</a>}
     <main>
       <slot />
     </main>
@@ -80,6 +85,13 @@ const fonts = `
           {onward
             ? <a class="u" href={roomHref(onward)}>Next, room {room.number + 1}: {onward.wing}</a>
             : <a class="u" href={url('/')}>Back to the entrance</a>}
+        </p>
+      )}
+      {show && (
+        <p class="small here-line">
+          <span>Exhibition: {show.title}</span>
+          <span aria-hidden="true"> · </span>
+          <a class="u" href={url('/')}>Back to the entrance</a>
         </p>
       )}
       <p class="small muted statement-line">Nothing here was painted and nothing here is copied. Every work is a new commission in the manner of its painter.</p>
@@ -135,7 +147,7 @@ const fonts = `
   /* Painted rooms. The wall colour is a curatorial decision and does not follow the visitor's system setting:
      a room looks the same to everyone, by day or by night, on screen, in the wallpapers and in the share images.
      Only the public spaces (entrance, list of works, about) switch between gallery white and near-black. */
-  :root[data-room] { --wall: var(--room-wall); --muted: color-mix(in srgb, var(--ink) 75%, var(--wall)); }
+  :root[data-room], :root[data-show] { --wall: var(--room-wall); --muted: color-mix(in srgb, var(--ink) 75%, var(--wall)); }
   :root[data-ink="light"] { --ink: #f2f1ed; color-scheme: dark; }
   :root[data-ink="dark"] { --ink: #141414; color-scheme: light; }
 

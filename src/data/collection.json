@@ -661,5 +661,46 @@
         { "id": "self-with-earbuds", "loopSeconds": 16, "title": "Self-Portrait with Earbuds", "subject": "a raw frontal self-portrait of a young Black man with a shaved head and white earbuds, an invented person who resembles no real painter, crown above, layered blue and yellow fields, scratched marks", "label": "A young man with a shaved head looks straight out through layers of blue and yellow, white earbuds in, a crown above him and a skeleton on either side. The writing around him says still here, bigger than the pain and, with a question mark, a better tomorrow. Basquiat painted himself crowned, haloed and furious. This one is quieter. The earbuds are doing some of the work." }
       ]
     }
+  ],
+  "exhibitions": [
+    {
+      "id": "formation",
+      "title": "Formation",
+      "subtitle": "One night, twenty-five hands",
+      "opens": "2026-10-18",
+      "closes": null,
+      "wall": "#121A2E",
+      "ink": "light",
+      "lead": "bruegel",
+      "subject": "One summer night, one city park, one drone light show. A few hundred small lights rise from a fenced square of grass, hold a shape against the dark, and come down again, while everyone on the lawn holds up a phone.",
+      "wallText": "On one summer night a city park fills for a drone light show. A few hundred small lights rise from a fenced square of grass, hold a shape against the dark, and come down again, and everyone on the lawn holds up a phone. Every painter in the building was sent to that park on that night. None of them had seen such a thing, and each of them kept to their own rule: Bruegel climbed the hill, Vermeer stayed at the window, Rothko kept only the glow. This is what the twenty-five of them brought back.",
+      "works": [
+        { "artist": "bruegel", "title": "The Drone Show, from the Hill", "subject": "a city park at dusk seen from a hillside, the lawn crowded with hundreds of tiny figures on blankets all looking up, food stalls and a toilet queue at the edge, children on shoulders, and above the park a few hundred small lights lifting off a fenced square of grass and gathering into one huge figure against the last light in the west" },
+        { "artist": "caravaggio", "title": "Looking Up", "subject": "four spectators at the front of a night crowd, lit hard from above by a drone light show so that their upturned faces, open mouths and raised phones are cut out of blackness, one hand pointing, everything else dark" },
+        { "artist": "vermeer", "title": "Girl at the Window, Drone Show", "subject": "a girl in a yellow jacket at a dark leaded window at night, her face lit from outside by hundreds of small points of light gathering into a shape over the rooftops, a glass of water and a phone face-down on the sill" },
+        { "artist": "goya", "title": "The Crowd Looks Up", "subject": "a night crowd of upturned faces with gaping mouths and wide eyes emerging from darkness, lit from above by a cold swarm of small lights, phones held up like candles, one red jacket" },
+        { "artist": "hokusai", "title": "Formation over the Pier", "subject": "a swarm of small lights rising in a tall column over a pier at night and bending in the wind like a flag, tiny figures on the pier looking up, a radio tower small and still on the far shore" },
+        { "artist": "friedrich", "title": "Two Figures Before the Formation", "subject": "two figures seen from behind at the dark edge of a park lawn at night, one holding up a phone, before a vast calm sky in which hundreds of small lights hang in a slow shape above a line of mist over the city, bare trees at the sides" },
+        { "artist": "turner", "title": "Drones in Drizzle", "subject": "a drone light show dissolving in fine rain over a river at night, the lights smeared into a vortex of gold and white, a bridge and a crowd barely suggested below" },
+        { "artist": "monet", "title": "The Formation, Reflected", "subject": "the park lake at dusk, a drone formation hanging over the far trees and reflected in the water in broken dabs of violet, rose and gold, two rowing boats as dark shapes" },
+        { "artist": "van-gogh", "title": "The Operators' Table", "subject": "the operators of a drone show at a folding table beside a white van under a plane tree at night, laptops and a lantern throwing yellow light over cables and cases, the crowd beyond as a dark mass" },
+        { "artist": "seurat", "title": "The Lawn at Night, Looking Up", "subject": "families lying on blankets on a dark lawn in stiff profile, every face turned up, the night sky above built from thousands of dots of light holding a formation" },
+        { "artist": "klimt", "title": "The Two at the Show", "subject": "a young couple cheek to cheek looking up at a drone show, their faces soft and real, their coats dissolving into a flat field of black and gold studded with small gold points like the lights above" },
+        { "artist": "af-klint", "title": "The Flight Plan", "subject": "a large diagram on a cream ground of hundreds of small pastel dots arranged in concentric rings and a rising spiral, connected by fine lines, a single golden circle at the top, lettering-like marks along the base" },
+        { "artist": "munch", "title": "Waiting for the Show to Start", "subject": "a pale mask-like face in the foreground of a dark park, hollow-eyed, holding a phone, the sky above bending in long strokes of deep blue around a thin scattered constellation of small lights" },
+        { "artist": "toulouse-lautrec", "title": "The Show, from the Back Row", "subject": "spectators seen from a low bench at the back of a night crowd, hats and raised phones in sinuous black contour, a woman in a mustard coat half turned toward us, the sky above left as cream paper with a scatter of red dots" },
+        { "artist": "kandinsky", "title": "Composition: Lift-Off", "subject": "an abstract composition of hundreds of small coloured points rising from a dark horizontal band into arcs and one great circle, thin black lines tracing their paths, on a pale ground" },
+        { "artist": "matisse", "title": "Night Lawn", "subject": "a cut-paper composition on a deep blue ground, white and yellow cut dots forming a shape in the upper half, simplified coral and green figures lying on a black lawn below with their arms raised" },
+        { "artist": "mondrian", "title": "Formation Boogie Woogie", "subject": "a grid of thin black lines on white, the intersections carrying small yellow, blue and red squares that thicken toward the centre into a dense cluster like lights holding a shape, one large pale grey rectangle low on the right" },
+        { "artist": "picasso", "title": "Spectators", "subject": "three faces looking up, fractured into overlapping planes, both eyes on one side, a phone held up showing the same scattered lights that hang above them, slate blue and ochre" },
+        { "artist": "hopper", "title": "The Show, from the Car Park", "subject": "a couple sitting on the hood of a parked car in an empty car park at the edge of a park at night under one streetlight, looking across the dark grass at a small distant shape of lights in the sky, a closed kiosk" },
+        { "artist": "rothko", "title": "Untitled (Formation)", "subject": "a soft near-black rectangle above a soft deep indigo rectangle on a charcoal ground, a thin faint band of pale light between them, barely glowing" },
+        { "artist": "kahlo", "title": "Self-Portrait with a Drone", "subject": "a frontal self-portrait of a woman with a thick braid and dark brows against dense night foliage, a small four-rotor drone with a green light hovering at her shoulder where a hummingbird would be, a scatter of lights in the sky behind" },
+        { "artist": "warhol", "title": "Drone, Thirty-Six Times", "subject": "a single small quadcopter drone with one light, screenprinted thirty-six times in a grid in acid pink, yellow, turquoise and black, slight misregistration" },
+        { "artist": "kusama", "title": "Infinity Formation", "subject": "a night sky as a field of graduated yellow dots on black gathering into a dense shape, and below it a crowd of heads as black dots on yellow, the two fields meeting at a horizon of dots" },
+        { "artist": "hockney", "title": "The Show over the Pool", "subject": "a backyard at dusk, a turquoise pool lit from below, a family on loungers looking up, one palm, and above the pink-to-blue sky a formation of small white lights" },
+        { "artist": "basquiat", "title": "Untitled (Lift-Off)", "subject": "a crowned skull-headed figure looking up, red arrows pointing at a cluster of scrawled white dots, crossed-out scrawled numbers and a lightning bolt, black and yellow on raw canvas" }
+      ]
+    }
   ]
 }
