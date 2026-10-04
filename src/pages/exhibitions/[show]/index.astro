@@ -32,7 +32,7 @@ const share = { title: `${show.title} — ${show.subtitle}`, ...(lead.image && {
   {!open && lead.image && (
     <section class="preview page cols" aria-label="Before the opening">
       <figure>
-        <span class="hung"><Work piece={lead} still transition={false} sizes="(min-width: 1024px) 70vw, 100vw" /></span>
+        <span class="hung"><Work piece={lead} transition={false} sizes="(min-width: 1024px) 70vw, 100vw" /></span>
         <figcaption class="ts"><Tombstone piece={lead} headingLevel={2} /><p class="small muted">The first work to be hung. The rest open with the show.</p></figcaption>
       </figure>
     </section>
