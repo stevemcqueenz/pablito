@@ -53,6 +53,23 @@ Paintings are rendered on Weave, which the curator's Claude session reaches thro
 
 A painting dropped straight into `src/art` hangs too; run `node scripts/credit.mjs` afterwards so it carries the credit.
 
+## Exhibitions
+
+A show sends every painter in the building to one subject, each under the rule of their own room, and may invite painters who have no room yet. Shows live in `exhibitions` in the collection file. Each has:
+
+- `id`, `title`, `subtitle`, and `opens` and `closes` as dates; `closes` may be null.
+- `wall` and `ink`, like a room; `lead`, the painter whose work announces the show; `subject`, the one brief every painter received; and `wallText`.
+- `guests`, visiting painters with the same fields a room's painter has, plus `born`, since they have no room to be numbered by.
+- `works`, one per painter, each with `artist`, `title`, `subject`, an extended `label` once painted, and `loopSeconds` if it moves.
+
+Works hang in the order the painters were born, guests among them, and are filed at `src/art/exhibitions/<show>/<painter>.jpg` and `src/motion/exhibitions/<show>/<painter>.mp4`. The brief and ingest scripts take `--show <id>`.
+
+A show opens by itself. Before `opens` the build makes only the announcement: the show page with its wall text and the lead work, no hang, no work pages, and no entry in the list of works. From the opening day the whole show is built. The deploy runs every night just after midnight UTC as well as on every push, so the opening needs no one at the keyboard; GitHub may run a scheduled build some minutes late. To see the site as it will stand on a date:
+
+```
+PABLITO_NOW=2026-10-20 npm run build
+```
+
 ## Moving paintings
 
 `src/motion/<painter>/<work>.mp4` sets a work in motion. Clips are made on Weave from the still, and filed with `node scripts/ingest.mjs <painter> <work> clip.mp4 --motion`. The still shows first and the clip begins once someone has looked at it for a moment; the still is what downloads. Clips are short, silent, made from the still as their first frame, and looped either plainly or forward-and-back when the model drifts from where it started. Record the loop length as `loopSeconds` on the piece so the label can say it.

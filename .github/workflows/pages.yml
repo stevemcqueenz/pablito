@@ -3,6 +3,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Every night just after midnight UTC, so a show whose opening day has come is hung without a push.
+  schedule:
+    - cron: '5 0 * * *'
 permissions:
   contents: read
   pages: write

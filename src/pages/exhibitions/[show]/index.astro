@@ -2,7 +2,7 @@
 import Museum from '../../../layouts/Museum.astro';
 import Work from '../../../components/Work.astro';
 import Tombstone from '../../../components/Tombstone.astro';
-import { exhibitions, getShowWorks, getShowLead, showInfo, showHref, showDates, showStatus, showNumber, inWords, capitalise, isGuest, url } from '../../../lib/collection.js';
+import { exhibitions, getShowWorks, getShowLead, showInfo, showHref, showDates, showStatus, showNumber, inWords, capitalise, isGuest, isOpen, longDate, url } from '../../../lib/collection.js';
 export function getStaticPaths() {
   return exhibitions.map((s) => ({ params: { show: s.id }, props: { show: s } }));
 }
@@ -11,13 +11,14 @@ const works = getShowWorks(show);
 const info = showInfo(show);
 const status = showStatus(show);
 const lead = getShowLead(show);
+const open = isOpen(show);
 const hung = works.filter((w) => w.image).length;
 const visiting = works.filter((w) => isGuest(w.artist)).length;
 const who = visiting ? `one by each painter in the building and ${inWords(visiting)} by visiting painters` : 'one by each painter in the building';
 const count = hung === works.length ? `${capitalise(inWords(works.length))} works, ${who}.` : hung ? `${capitalise(inWords(works.length))} works commissioned, ${inWords(hung)} painted so far.` : `${capitalise(inWords(works.length))} works commissioned. None painted yet.`;
 const share = { title: `${show.title} — ${show.subtitle}`, ...(lead.image && { image: url(`/og/exhibitions/${show.id}/${lead.artistId}.jpg`), alt: `${lead.alt}, on the wall of the exhibition ${show.title}` }) };
 ---
-<Museum kind="show" title={show.title} description={show.wallText} show={info} share={share} rel={{ prev: url('/exhibitions/'), next: works[0]?.href, up: url('/exhibitions/') }}>
+<Museum kind="show" title={show.title} description={show.wallText} show={info} share={share} rel={{ prev: url('/exhibitions/'), next: open ? works[0]?.href : undefined, up: url('/exhibitions/') }}>
   <section class="panel page cols">
     <p class="numeral muted num" aria-hidden="true">E{showNumber(show)}</p>
     <div class="head">
@@ -25,11 +26,20 @@ const share = { title: `${show.title} — ${show.subtitle}`, ...(lead.image && {
       <p class="label who">{show.subtitle} · {status === 'upcoming' ? `Opens ${showDates(show).replace(/^From /, '')}` : showDates(show)}</p>
     </div>
     <p class="walltext">{show.wallText}</p>
-    <p class="label count">{count}</p>
+    <p class="label count">{open ? count : `${capitalise(inWords(works.length))} works, hung from ${longDate(show.opens)}.`}</p>
   </section>
 
-  <section class="walk page" aria-label="The works">
-    {works.map((p) => (
+  {!open && lead.image && (
+    <section class="preview page cols" aria-label="Before the opening">
+      <figure>
+        <span class="hung"><Work piece={lead} still transition={false} sizes="(min-width: 1024px) 70vw, 100vw" /></span>
+        <figcaption class="ts"><Tombstone piece={lead} headingLevel={2} /><p class="small muted">The first work to be hung. The rest open with the show.</p></figcaption>
+      </figure>
+    </section>
+  )}
+
+  <section class="walk page" aria-label="The works" hidden={!open}>
+    {open && works.map((p) => (
       <article class="wall cols" id={p.artistId}>
         <a class="piece-link hung" href={p.href} tabindex="-1" aria-hidden="true"><Work piece={p} sizes="(min-width: 1024px) 70vw, 100vw" /></a>
         <div class="ts"><Tombstone piece={p} link headingLevel={2} /></div>
@@ -37,13 +47,13 @@ const share = { title: `${show.title} — ${show.subtitle}`, ...(lead.image && {
     ))}
   </section>
 
-  <section class="rule page cols" aria-label="The brief for this show">
+  {open && <section class="rule page cols" aria-label="The brief for this show">
     <div>
       <p class="small muted">The brief for this show</p>
       <p class="title">{show.subject}</p>
       <p class="small muted note">Every painter received it. Each painted it under the rule of their own room.</p>
     </div>
-  </section>
+  </section>}
 
   <nav class="show-end page cols" aria-label="Onward">
     <p class="small"><a class="u" href={url('/exhibitions/')}>All exhibitions</a><span aria-hidden="true"> · </span><a class="u" href={url('/')}>Back to the entrance</a></p>
@@ -62,6 +72,19 @@ const share = { title: `${show.title} — ${show.subtitle}`, ...(lead.image && {
     .head { grid-column: 3 / 10; grid-row: 1; }
     .walltext, .count { grid-column: 3 / 9; }
   }
+  .preview { margin-top: 48px; }
+  .preview figure { display: contents; }
+  .preview .hung { display: block; }
+  .preview .hung :global(.work) { width: min(100%, calc(60svh * var(--r))); margin-inline: auto; }
+  .preview .ts { display: grid; gap: 12px; }
+  .preview .ts :global(.tombstone) { max-width: 280px; }
+  @media (min-width: 900px) {
+    .preview { margin-top: 64px; }
+    .preview .hung { grid-column: 1 / 10; }
+    .preview .hung :global(.work) { width: min(100%, calc(min(58svh, 640px) * var(--r))); }
+    .preview .ts { grid-column: 10 / 13; align-self: end; }
+  }
+  .walk[hidden] { display: none; }
   .walk { margin-top: 48px; display: grid; gap: 72px; }
   .wall { row-gap: 16px; scroll-margin-top: 24px; }
   .hung { display: block; }

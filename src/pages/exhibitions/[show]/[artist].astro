@@ -3,9 +3,9 @@ import Museum from '../../../layouts/Museum.astro';
 import Work from '../../../components/Work.astro';
 import Tombstone from '../../../components/Tombstone.astro';
 import Strip from '../../../components/Strip.astro';
-import { exhibitions, getShowWorks, showInfo, showHref, showNeighbours, url } from '../../../lib/collection.js';
+import { exhibitions, getShowWorks, showInfo, showHref, showNeighbours, isOpen, url } from '../../../lib/collection.js';
 export function getStaticPaths() {
-  return exhibitions.flatMap((s) => getShowWorks(s).map((w) => ({ params: { show: s.id, artist: w.artistId }, props: { show: s, piece: w } })));
+  return exhibitions.filter(isOpen).flatMap((s) => getShowWorks(s).map((w) => ({ params: { show: s.id, artist: w.artistId }, props: { show: s, piece: w } })));
 }
 const { show, piece } = Astro.props;
 const { prev, next } = showNeighbours(piece);

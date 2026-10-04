@@ -151,12 +151,18 @@ export function showDates(show) {
   return show.closes ? `${longDate(show.opens)} – ${longDate(show.closes)}` : `From ${longDate(show.opens)}`;
 }
 
+/** The build's clock. PABLITO_NOW=2026-10-20 npm run build shows the site as it will stand that day. */
+export const buildNow = () => new Date((typeof process !== 'undefined' && process.env.PABLITO_NOW) || Date.now());
+
 /** 'upcoming', 'on' or 'past', as of the build. */
-export function showStatus(show, now = new Date()) {
+export function showStatus(show, now = buildNow()) {
   if (now < new Date(show.opens)) return 'upcoming';
   if (show.closes && now > new Date(`${show.closes}T23:59:59`)) return 'past';
   return 'on';
 }
+
+/** A show's works are on view from its opening day; before that only the announcement is. */
+export const isOpen = (show) => showStatus(show) !== 'upcoming';
 
 export function showNumber(show) {
   return exhibitions.findIndex((s) => s.id === show.id) + 1;

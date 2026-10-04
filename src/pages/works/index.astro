@@ -1,6 +1,6 @@
 ---
 import Museum from '../../layouts/Museum.astro';
-import { artists, getPieces, roomHref, url, exhibitions, getShowWorks, showHref, showNumber } from '../../lib/collection.js';
+import { artists, getPieces, roomHref, url, exhibitions, getShowWorks, showHref, showNumber, isOpen } from '../../lib/collection.js';
 ---
 <Museum title="List of works" description="Every work in the collection, room by room, with catalogue numbers, media and dimensions." rel={{ up: url('/') }}>
   <article class="works page cols">
@@ -27,7 +27,7 @@ import { artists, getPieces, roomHref, url, exhibitions, getShowWorks, showHref,
           ))}
         </tbody>
       ))}
-      {exhibitions.map((s) => (
+      {exhibitions.filter(isOpen).map((s) => (
         <tbody>
           <tr class="room-row">
             <th colspan="5" scope="rowgroup"><a href={showHref(s)}><span class="rn">E{showNumber(s)}</span>{s.title}, an exhibition</a></th>
