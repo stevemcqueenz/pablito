@@ -27,30 +27,35 @@ The site is static Astro with no framework on the client and one small script fo
 
 `src/lib/collection.js` builds the prompt for any work (`subject`, then `styleBrief`, then `renderSuffix`), finds its image and clip on disk, and numbers the rooms and works.
 
-## Printing a brief
+## Commissioning a painting
 
-```
-node scripts/prompt.mjs hopper             # the five Hopper commissions
-node scripts/prompt.mjs vermeer video-call # one of them
-```
+Paintings are rendered on Weave, which the curator's Claude session reaches through the Figma connector. The generator is GPT Image 2.5, the Flare variant at quality high, about 8 credits a painting. Each room's canvas proportion has a pixel size, listed in `scripts/prompt.mjs`, so every work in a room is rendered at the same size: 2160 × 1440 for a 3:2 room, 1600 × 2000 for 4:5, 2000 × 1504 for 4:3, 1728 × 1728 for 1:1, 1440 × 2160 for 2:3.
 
-## Paintings
+1. Print the brief and its settings.
 
-`src/art/<painter>/<work>.jpg` is a finished painting. Drop a file in and it hangs at the next build. Crop to the canvas edge: the museum shows every image whole, at its own proportions, on a painted wall, so a photographed margin would show. Hokusai's prints keep their paper.
+   ```
+   node scripts/prompt.mjs hopper             # the five Hopper commissions
+   node scripts/prompt.mjs vermeer video-call # one of them
+   node scripts/prompt.mjs hopper --json      # one line per work, for a run
+   ```
 
-`scripts/render.mjs` renders a room's briefs through fal.ai:
+2. Run it on Weave with those settings, as many times as it takes. The curator looks at every result and keeps one or none. A result that quotes a known painting means the subject is rewritten, not the result kept.
 
-```
-FAL_KEY=… node scripts/render.mjs hopper                       # the whole room
-FAL_KEY=… node scripts/render.mjs hopper laundromat --force    # one work, again
-FAL_KEY=… node scripts/render.mjs hopper --model gpt-image-2.5 # choose the generator
-```
+3. File the one that is kept.
 
-Generators are listed in the `MODELS` table at the top of the script; add one there. Every run logs the request id, so a render whose download fails can still be fetched.
+   ```
+   node scripts/ingest.mjs hopper laundromat /path/to/result.png
+   node scripts/ingest.mjs hopper laundromat https://…/result.png --trim
+   node scripts/ingest.mjs hopper laundromat result.png --force     # replace what hangs
+   ```
+
+   The painting is re-encoded as a progressive JPEG at `src/art/<painter>/<work>.jpg` and the credit is written into its EXIF and XMP. `--trim` cuts away an even border the model painted around the canvas: the museum shows every image whole, at its own proportions, on a painted wall, so a photographed margin would show. Hokusai's prints keep their paper.
+
+A painting dropped straight into `src/art` hangs too; run `node scripts/credit.mjs` afterwards so it carries the credit.
 
 ## Moving paintings
 
-`src/motion/<painter>/<work>.mp4` sets a work in motion. The still shows first and the clip begins once someone has looked at it for a moment; the still is what downloads. Clips are short, silent, made from the still as their first frame, and looped either plainly or forward-and-back when the model drifts from where it started. Record the loop length as `loopSeconds` on the piece so the label can say it.
+`src/motion/<painter>/<work>.mp4` sets a work in motion. Clips are made on Weave from the still, and filed with `node scripts/ingest.mjs <painter> <work> clip.mp4 --motion`. The still shows first and the clip begins once someone has looked at it for a moment; the still is what downloads. Clips are short, silent, made from the still as their first frame, and looped either plainly or forward-and-back when the model drifts from where it started. Record the loop length as `loopSeconds` on the piece so the label can say it.
 
 ## Wallpapers and share images
 
