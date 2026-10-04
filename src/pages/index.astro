@@ -2,7 +2,7 @@
 import Museum from '../layouts/Museum.astro';
 import Work from '../components/Work.astro';
 import Tombstone from '../components/Tombstone.astro';
-import { museum, artists, works, getArtist, getPieces, getLead, roomHref, inWords, capitalise, exhibitions, showHref, showDates, showStatus, longDate } from '../lib/collection.js';
+import { museum, artists, works, getArtist, getPieces, getLead, roomHref, inWords, capitalise, exhibitions, showHref, showDates, showStatus, longDate, getShowLead } from '../lib/collection.js';
 
 // The entrance opens on one painting that moves.
 const opening = getPieces(getArtist('hopper')).find((p) => p.id === 'laundromat');
@@ -12,7 +12,7 @@ const count = `${capitalise(inWords(artists.length))} rooms, ${inWords(hung)} pa
 const first = artists[0];
 const last = artists[artists.length - 1];
 // The show on now, or the next one announced, gets one line at the entrance.
-const current = exhibitions.map((s) => ({ s, status: showStatus(s) })).find((x) => x.status !== 'past');
+const current = exhibitions.map((s) => ({ s, status: showStatus(s), lead: getShowLead(s) })).find((x) => x.status !== 'past');
 const surname = (a) => a.name.split(' ').filter((w) => !/^(the|elder|van|af|de)$/i.test(w)).slice(-1)[0];
 const born = (a) => a.years.replace(/^b\.\s*/, '').split('–')[0].trim();
 ---
@@ -34,10 +34,18 @@ const born = (a) => a.years.replace(/^b\.\s*/, '').split('–')[0].trim();
 
   {current && (
     <section class="now page cols" aria-label="Exhibition">
-      <div>
-        <p class="small muted">{current.status === 'on' ? 'Now on' : `Opens ${longDate(current.s.opens)}`}</p>
-        <p class="plate"><a class="u" href={showHref(current.s)}>{current.s.title}</a></p>
-        <p class="label muted">{current.s.subtitle} · {showDates(current.s)}</p>
+      <div class:list={['tease', { upcoming: current.status !== 'on' }]}>
+        {current.status !== 'on' && current.lead.image && (
+          <a class="piece-link swatch" href={showHref(current.s)} style={`--room-wall:${current.s.wall}`} data-ink={current.s.ink} tabindex="-1" aria-hidden="true">
+            <Work piece={current.lead} still transition={false} sizes="(min-width: 900px) 30vw, 90vw" />
+          </a>
+        )}
+        <div class="lines">
+          <p class="small muted">{current.status === 'on' ? 'Now on' : `Opens ${longDate(current.s.opens)}`}</p>
+          <p class="plate"><a class="u" href={showHref(current.s)}>{current.s.title}</a></p>
+          <p class="label muted">{current.s.subtitle}{current.status === 'on' && ` · ${showDates(current.s)}`}</p>
+          {current.status !== 'on' && current.s.teaser && <p class="label">{current.s.teaser}</p>}
+        </div>
       </div>
     </section>
   )}
@@ -91,9 +99,17 @@ const born = (a) => a.years.replace(/^b\.\s*/, '').split('–')[0].trim();
   }
 
   .now { margin-top: 64px; }
-  .now > div { display: grid; gap: 4px; }
+  .tease { display: grid; gap: 20px; }
+  .tease .lines { display: grid; gap: 4px; }
   .now .plate { font-style: normal; }
-  @media (min-width: 900px) { .now { margin-top: 96px; } .now > div { grid-column: 3 / 9; } }
+  .swatch { display: block; padding: 20px; background: var(--room-wall); }
+  .swatch :global(.work) { width: min(100%, calc(40svh * var(--r))); margin-inline: auto; }
+  @media (min-width: 900px) {
+    .now { margin-top: 96px; }
+    .now > div { grid-column: 3 / 11; }
+    .tease.upcoming { grid-template-columns: minmax(0, 5fr) minmax(0, 4fr); align-items: end; gap: 40px; }
+    .swatch { padding: 32px; }
+  }
 
   .rooms { margin-top: 96px; }
   @media (min-width: 1024px) { .rooms { margin-top: 160px; } }

@@ -18,14 +18,14 @@ const who = visiting ? `one by each painter in the building and ${inWords(visiti
 const count = hung === works.length ? `${capitalise(inWords(works.length))} works, ${who}.` : hung ? `${capitalise(inWords(works.length))} works commissioned, ${inWords(hung)} painted so far.` : `${capitalise(inWords(works.length))} works commissioned. None painted yet.`;
 const share = { title: `${show.title} — ${show.subtitle}`, ...(lead.image && { image: url(`/og/exhibitions/${show.id}/${lead.artistId}.jpg`), alt: `${lead.alt}, on the wall of the exhibition ${show.title}` }) };
 ---
-<Museum kind="show" title={show.title} description={show.wallText} show={info} share={share} rel={{ prev: url('/exhibitions/'), next: open ? works[0]?.href : undefined, up: url('/exhibitions/') }}>
+<Museum kind="show" title={show.title} description={open ? show.wallText : show.teaser ?? show.subtitle} show={info} share={share} rel={{ prev: url('/exhibitions/'), next: open ? works[0]?.href : undefined, up: url('/exhibitions/') }}>
   <section class="panel page cols">
     <p class="numeral muted num" aria-hidden="true">E{showNumber(show)}</p>
     <div class="head">
       <h1 class="display"><span class="sr-only">Exhibition {showNumber(show)}: </span>{show.title}</h1>
       <p class="label who">{show.subtitle} · {status === 'upcoming' ? `Opens ${showDates(show).replace(/^From /, '')}` : showDates(show)}</p>
     </div>
-    <p class="walltext">{show.wallText}</p>
+    <p class="walltext">{open ? show.wallText : show.teaser ?? show.subtitle}</p>
     <p class="label count">{open ? count : `${capitalise(inWords(works.length))} works, hung from ${longDate(show.opens)}.`}</p>
   </section>
 
@@ -33,7 +33,7 @@ const share = { title: `${show.title} — ${show.subtitle}`, ...(lead.image && {
     <section class="preview page cols" aria-label="Before the opening">
       <figure>
         <span class="hung"><Work piece={lead} transition={false} sizes="(min-width: 1024px) 70vw, 100vw" /></span>
-        <figcaption class="ts"><Tombstone piece={lead} headingLevel={2} /><p class="small muted">The first work to be hung. The rest open with the show.</p></figcaption>
+        <figcaption class="ts"><Tombstone piece={lead} headingLevel={2} /><p class="small muted">The first work to be hung. The rest open on {longDate(show.opens)}.</p></figcaption>
       </figure>
     </section>
   )}
